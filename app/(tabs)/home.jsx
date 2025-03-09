@@ -1,45 +1,132 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, ImageBackground, Alert } from "react-native";
+import { useRouter } from "expo-router";
+import { Picker } from "@react-native-picker/picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Feather } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function Home() {
-  const posts = [
-    { id: 1, title: "First Post", likes: 45 },
-    { id: 2, title: "Second Post", likes: 78 },
-    { id: 3, title: "Third Post", likes: 23 },
+import taxiBackground from "../../assets/robot.jpg";
+
+const Home = () => {
+  const [fromCity, setFromCity] = useState("Antsirabe");
+  const [toCity, setToCity] = useState("Antananarivo");
+  const [travelDate, setTravelDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const router = useRouter();
+
+  const cities = [
+    "Antsirabe", "Antananarivo", "Fianarantsoa", "Toamasina",
+    "Antsiranana", "Toliara", "Morondava", "Ambositra",
+    "Moramanga", "Ambatolampy", "Mahajanga", "Betafo",
+    "Tsiroanimandidy", "Mandoto", "Morafeno",
   ];
 
-  return (
-    <ScrollView className="flex-1 bg-primaryy">
-      {/* Header */}
-      <Animated.View entering={FadeInUp.duration(500)} className="pt-12 pb-6 px-4 bg-[#25292e]">
-        <Text className="text-3xl font-bold text-white">Home</Text>
-        <Text className="text-sm text-gray-400 mt-1">Your latest updates</Text>
-      </Animated.View>
+  const handleSearch = () => {
+    if (!fromCity || !toCity) {
+      Alert.alert("Erreur", "Veuillez sélectionner les villes de départ et d'arrivée !");
+      return;
+    }
+    const formattedDate = travelDate.toISOString().split("T")[0];
+    router.push(`/available-taxibe?from=${fromCity}&to=${toCity}&date=${formattedDate}`);
+  };
 
-      {/* Posts */}
-      <View className="px-4 mt-4">
-        {posts.map((post, index) => (
-          <Animated.View
-            key={post.id}
-            entering={FadeInDown.duration(500).delay(index * 200)}
-            className="bg-white rounded-xl p-4 mb-4 shadow-md"
-          >
-            <Text className="text-lg font-semibold text-text">{post.title}</Text>
-            <View className="flex-row items-center mt-2">
-              <TouchableOpacity className="flex-row items-center">
-                <Ionicons name="heart-outline" size={20} color="#ffd33d" />
-                <Text className="ml-1 text-gray-600">{post.likes}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity className="ml-4 flex-row items-center">
-                <Ionicons name="chatbubble-outline" size={20} color="#ffd33d" />
-                <Text className="ml-1 text-gray-600">Reply</Text>
+  const onDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || travelDate;
+    setShowDatePicker(false);
+    setTravelDate(currentDate);
+  };
+
+  return (
+    <SafeAreaView className="flex-1 bg-gray-100">
+      <View className="relative flex-1">
+        {/* Background Image */}
+        <ImageBackground
+          source={taxiBackground}
+          className="absolute inset-0 opacity-90"
+          resizeMode="cover"
+        >
+          <View className="absolute inset-0 bg-gradient-to-r from-green-800/90 to-blue-900/90" />
+        </ImageBackground>
+
+        {/* Formulaire */}
+        <View className="flex-1 justify-center items-center px-4">
+          <View className="bg-white/95 p-6 rounded-2xl shadow-2xl w-full max-w-md">
+            <Text className="text-2xl font-bold text-green-700 mb-6 text-center">
+              <Text className="border-b-4 border-green-500">Planifiez</Text> votre trajet
+            </Text>
+
+            <View className="space-y-6">
+              {/* Sélection de la ville de départ */}
+              <View>
+                <Text className="text-gray-700 mb-2 font-medium">Départ</Text>
+                <View className="border-2 border-gray-200 rounded-xl">
+                  <Picker
+                    selectedValue={fromCity}
+                    onValueChange={(itemValue) => setFromCity(itemValue)}
+                    style={{ height: 50 }}
+                  >
+                    {cities.map((city) => (
+                      <Picker.Item key={city} label={city} value={city} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+
+              {/* Sélection de la ville de destination */}
+              <View>
+                <Text className="text-gray-700 mb-2 font-medium">Destination</Text>
+                <View className="border-2 border-gray-200 rounded-xl">
+                  <Picker
+                    selectedValue={toCity}
+                    onValueChange={(itemValue) => setToCity(itemValue)}
+                    style={{ height: 50 }}
+                  >
+                    {cities.map((city) => (
+                      <Picker.Item key={city} label={city} value={city} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+
+              {/* Sélection de la date */}
+              <View>
+                <Text className="text-gray-700 mb-2 font-medium">Date de départ</Text>
+                <TouchableOpacity
+                  onPress={() => setShowDatePicker(true)}
+                  className="border-2 border-gray-200 rounded-xl p-3"
+                >
+                  <Text className="text-gray-700">
+                    {travelDate.toLocaleDateString()}
+                  </Text>
+                </TouchableOpacity>
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={travelDate}
+                    mode="date"
+                    display="default"
+                    onChange={onDateChange}
+                    minimumDate={new Date()} // Empêche de sélectionner une date passée
+                  />
+                )}
+              </View>
+
+              {/* Bouton de recherche */}
+              <TouchableOpacity
+                onPress={handleSearch}
+                className="bg-green-400 p-4 rounded-xl flex-row items-center justify-center"
+              >
+                <Text className="text-white font-bold text-lg mr-2">
+                  Rechercher un TaxiBe
+                </Text>
+                <Feather name="arrow-right" size={24} color="white" />
               </TouchableOpacity>
             </View>
-          </Animated.View>
-        ))}
+          </View>
+        </View>
       </View>
-    </ScrollView>
+    </SafeAreaView>
   );
-}
+};
+
+export default Home;
