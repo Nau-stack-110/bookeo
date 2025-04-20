@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,80 +11,75 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
-
-// Static data for testing
-const staticTaxibes = [
-  {
-    id: 1,
-    marque: "Toyota HiAce",
-    matricule: "TAX 1234",
-    chauffeur: "Jean Rakoto",
-    nb_place: 15,
-    place_dispo: 5,
-    prix: 10000,
-    cooperative: { id: 1, nom: "Coopérative Nord" },
-    photo: "https://via.placeholder.com/150",
-  },
-  {
-    id: 2,
-    marque: "Mercedes Sprinter",
-    matricule: "TAX 5678",
-    chauffeur: "Marie Rabe",
-    nb_place: 20,
-    place_dispo: 8,
-    prix: 12000,
-    cooperative: { id: 2, nom: "Coopérative Sud" },
-    photo: "https://via.placeholder.com/150",
-  },
-  {
-    id: 3,
-    marque: "Nissan NV350",
-    matricule: "TAX 9012",
-    chauffeur: "Paul Andry",
-    nb_place: 12,
-    place_dispo: 3,
-    prix: 9000,
-    cooperative: { id: 1, nom: "Coopérative Nord" },
-    photo: "https://via.placeholder.com/150",
-  },
-];
+import axios from "axios";
 
 const AvailableTaxibe = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { from, to, date } = params;
 
-  const [taxibes] = useState(staticTaxibes);
+  const [taxibes, setTaxibes] = useState([]);
   const [selectedCooperative, setSelectedCooperative] = useState("Toutes");
-  const [loading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [cooperatives, setCooperatives] = useState([{ id: "Toutes", nom: "Toutes les coopératives" }]);
 
-  // Extract unique cooperatives from static data
-  const cooperatives = [
-    { id: "Toutes", nom: "Toutes les coopératives" },
-    ...Array.from(
-      new Map(
-        staticTaxibes.map((item) => [
-          item.cooperative.id,
-          { id: item.cooperative.id, nom: item.cooperative.nom },
-        ])
-      ).values()
-    ),
-  ];
+  useEffect(() => {
+    const fetchTaxibes = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('https://vital-lizard-adequately.ngrok-free.app/api/available_taxibe/', {
+          params: { from, to, date }
+        });
+        setTaxibes(response.data);
+      } catch (error) {
+        console.error('Error fetching taxibes:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchCooperatives = async () => {
+      try {
+        const response = await axios.get('https://vital-lizard-adequately.ngrok-free.app/api/taxibeget/');
+        const uniqueCooperatives = Array.from(
+          new Map(
+            response.data.map((item) => [
+              item.cooperative.id,
+              { id: item.cooperative.id, nom: item.cooperative.nom },
+            ])
+          ).values()
+        );
+        setCooperatives([{ id: "Toutes", nom: "Toutes les coopératives" }, ...uniqueCooperatives]);
+      } catch (error) {
+        console.error('Error fetching cooperatives:', error);
+      }
+    };
+
+    fetchTaxibes();
+    fetchCooperatives();
+  }, [from, to, date]);
 
   const filteredTaxibes =
-    selectedCooperative === "Toutes"
-      ? taxibes
-      : taxibes.filter(
-          (t) => t.cooperative.id === Number(selectedCooperative)
-        );
+  selectedCooperative === "Toutes"
+    ? taxibes
+    : taxibes.filter(
+        (t) => t.taxibe.cooperative === Number(selectedCooperative)
+      );
+
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return date.toLocaleDateString('fr-FR', options);
+    };
 
   const handleReservationClick = (taxibe) => {
     router.push({
       pathname: "/selectSeats",
       params: {
-        totalPlaces: taxibe.nb_place,
-        availablePlaces: taxibe.place_dispo,
-        marque: taxibe.marque,
+        totalPlaces: taxibe.taxibe.nb_place,
+        availablePlaces: taxibe.taxibe.place_dispo,
+        marque: taxibe.taxibe.marque,
         trajetId: taxibe.id,
       },
     });
@@ -92,29 +87,37 @@ const AvailableTaxibe = () => {
 
   const renderTaxibe = ({ item }) => (
     <TouchableOpacity
-      onPress={() => handleReservationClick(item)}
-      className="bg-white rounded-xl shadow-md p-4 mb-4 mx-2 flex-row items-center"
+      onPress={() =>
+        router.push({
+          pathname: "/selectSeats",
+          params: {
+            totalPlaces: item.taxibe.nb_place,
+            availablePlaces: item.taxibe.place_dispo,
+            marque: item.taxibe.marque,
+            trajetId: item.id,
+          },
+        })
+      }
+      className="bg-white rounded-xl shadow-md p-4 mb-4 mx-2 flex-row items-center justify-between"
     >
       <Image
-        source={{ uri: item.photo }}
-        className="w-24 h-24 rounded-lg mr-4"
+        source={`https://vital-lizard-adequately.ngrok-free.app/${item.taxibe.photo}`}
+        className="w-20 h-20 rounded-xl"
         resizeMode="cover"
       />
-      <View className="flex-1">
-        <Text className="text-blue-600 font-bold text-lg">{item.marque}</Text>
+      <View className="flex-1 mx-4">
+        <Text className="font-bold text-blue-500 text-lg">{item.taxibe.marque}</Text>
         <Text className="text-gray-600 text-sm">
-          <Feather name="hash" size={14} color="gray" /> {item.matricule}
+          <Feather name="home" size={14} color="gray" /> {item.taxibe.cooperative || 'N/A'}
         </Text>
         <Text className="text-gray-600 text-sm">
-          <Feather name="user" size={14} color="gray" /> {item.chauffeur}
+          <Feather name="hash" size={14} color="gray" /> {item.taxibe.matricule}
         </Text>
         <Text className="text-gray-600 text-sm">
-          <Feather name="users" size={14} color="gray" /> {item.place_dispo}/
-          {item.nb_place} places
+          <Feather name="user" size={14} color="gray" /> {item.taxibe.chauffeur}
         </Text>
-        <Text className="text-yellow-600 font-semibold text-sm mt-1">
-          <Feather name="dollar-sign" size={14} color="#D97706" /> {item.prix}{" "}
-          Ar/place
+        <Text className="text-green-600 text-sm">
+          <Feather name="users" size={14} color="gray" /> {item.place_dispo}/{item.taxibe.nb_place} places
         </Text>
       </View>
       <Feather name="chevron-right" size={24} color="gray" />
@@ -132,7 +135,7 @@ const AvailableTaxibe = () => {
           <Feather name="arrow-left" size={24} color="gray" />
         </TouchableOpacity>
         <Text className="text-lg font-bold text-green-700">
-          TaxiBe Disponibles
+          TAXI-BROUSSE DISPONIBLES
         </Text>
         <View className="w-10" /> {/* Spacer */}
       </View>
@@ -142,7 +145,7 @@ const AvailableTaxibe = () => {
         <Text className="text-xl font-semibold text-gray-800">
           {from} → {to}
         </Text>
-        <Text className="text-sm text-gray-600">Le {date}</Text>
+        <Text className="text-sm text-gray-600">Le {formatDate(date)}</Text>
       </View>
 
       {/* Cooperative Filter */}

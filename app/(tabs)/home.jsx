@@ -28,7 +28,7 @@ const Home = () => {
       return;
     }
     const formattedDate = travelDate.toISOString().split("T")[0];
-    router.push(`/available-taxibe?from=${fromCity}&to=${toCity}&date=${formattedDate}`);
+    router.push(`/availableTaxibe?from=${fromCity}&to=${toCity}&date=${formattedDate}`);
   };
 
   const onDateChange = (event, selectedDate) => {
@@ -117,7 +117,7 @@ const Home = () => {
                 className="bg-green-400 p-4 rounded-xl flex-row items-center justify-center"
               >
                 <Text className="text-white font-bold text-lg mr-2">
-                  Rechercher un TaxiBe
+                  Rechercher
                 </Text>
                 <Feather name="arrow-right" size={24} color="white" />
               </TouchableOpacity>

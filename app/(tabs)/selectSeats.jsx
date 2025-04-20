@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,41 +10,82 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated"; // For animations
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SelectSeats = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { totalPlaces, availablePlaces, marque, trajetId } = params;
+  const { totalPlaces, availablePlaces, marque, trajetId, from, to, date } = params;
 
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [showAlert, setShowAlert] = useState(false);
+  const [reservedSeats, setReservedSeats] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const maxSeats = 4;
 
-  // Static reserved seats for testing
-  const reservedSeats = [2, 5, 8]; // Example static data
+  useEffect(() => {
+    const fetchTrajetDetails = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`https://vital-lizard-adequately.ngrok-free.app/api/trajet/${trajetId}/`);
+        setReservedSeats(response.data.seat_indispo || []);
+        setLoading(false);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des sièges:', error);
+        setLoading(false);
+      }
+    };
+
+    if (trajetId) {
+      fetchTrajetDetails();
+    } else {
+      setLoading(false);
+    }
+  }, [trajetId]);
 
   const createVehicleLayout = () => {
-    const layout = [];
-    layout.push([1, 2, 3]); // Driver row
-
-    const remainingSeats = parseInt(totalPlaces) - 3;
-    const fullRows = Math.floor(remainingSeats / 4);
-
-    for (let i = 0; i < fullRows; i++) {
-      layout.push([4 + i * 4, 5 + i * 4, 6 + i * 4, 7 + i * 4]);
-    }
-
-    const remainingSeatsFinal = remainingSeats % 4;
-    if (remainingSeatsFinal > 0) {
-      layout.push(
-        Array.from(
+    let layout = [];
+    
+    if (totalPlaces === '20') {
+      layout = [
+        [1, 0, 2, 3],
+        [4, 5, 6, 7],
+        [8, 9, 0, 10],
+        [11, 12, 0, 13],
+        [14, 15, 0, 16],
+        [17, 18, 19, 20]
+      ];
+    } else if (totalPlaces === '22') {
+      layout = [
+        [1, 0, 2, 3],
+        [4, 5, 6, 7],
+        [8, 9, 10, 0],
+        [11, 12, 13, 14],
+        [15, 16, 17, 18],
+        [19, 20, 21, 22]
+      ];
+    } else {
+      layout = [[1, 2, 3]]; // Driver row
+      const remainingSeats = parseInt(totalPlaces) - 3;
+      const fullRows = Math.floor(remainingSeats / 4);
+      
+      for (let i = 0; i < fullRows; i++) {
+        layout.push([4 + i * 4, 5 + i * 4, 6 + i * 4, 7 + i * 4]);
+      }
+      
+      const remainingSeatsFinal = remainingSeats % 4;
+      if (remainingSeatsFinal > 0) {
+        const lastRow = Array.from(
           { length: remainingSeatsFinal },
           (_, i) => parseInt(totalPlaces) - remainingSeatsFinal + i + 1
-        )
-      );
+        );
+        layout.push(lastRow);
+      }
     }
-
+    
     return layout;
   };
 
@@ -56,7 +97,7 @@ const SelectSeats = () => {
     if (selectedSeats.includes(seatNumber)) {
       setSelectedSeats(selectedSeats.filter((s) => s !== seatNumber));
     } else if (selectedSeats.length < maxSeats) {
-      setSelectedSeats([...selectedSeats, seatNumber]);
+      setSelectedSeats([...selectedSeats, seatNumber].sort((a, b) => a - b));
     } else {
       setShowAlert(true);
       setTimeout(() => setShowAlert(false), 3000);
@@ -70,35 +111,79 @@ const SelectSeats = () => {
     return "bg-green-500"; // Available
   };
 
-  const handleReservation = () => {
+  const handleReservation = async () => {
     if (selectedSeats.length === 0) {
       alert("Veuillez sélectionner au moins un siège");
       return;
     }
 
-    // Simulate reservation success with static data
-    alert(`Réservation réussie pour ${selectedSeats.length} siège(s)`);
-    router.push("/my-tickets"); // Redirect to home or another screen
+    setIsSubmitting(true);
+    try {
+      const token = await AsyncStorage.getItem('accessToken');
+      const response = await axios.post(
+        'https://vital-lizard-adequately.ngrok-free.app/api/create-book/',
+        {
+          trajet: trajetId,
+          seats_reserved: selectedSeats,
+          places_researved: selectedSeats.length
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      // Update reserved seats immediately after successful reservation
+      setReservedSeats([...reservedSeats, ...selectedSeats]);
+      // Clear selected seats
+      setSelectedSeats([]);
+      
+      alert(`Réservation réussie pour ${selectedSeats.length} siège(s)`);
+      router.push({
+        pathname: "/payment",
+        params: {
+          seats: selectedSeats.join(', '),
+          totalAmount: selectedSeats.length * 10000 
+        }
+      });
+    } catch (error) {
+      console.error('Erreur lors de la réservation:', error);
+      console.error('Détails de l\'erreur:', error.response?.data);
+      const errorMessage = error.response?.data?.detail || 
+                         error.response?.data?.non_field_errors?.[0] || 
+                         'Une erreur est survenue lors de la réservation';
+      alert(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const renderSeat = ({ item: seatNumber }) => (
-    <TouchableOpacity
-      onPress={() => handleSeatClick(seatNumber)}
-      disabled={seatNumber === 1 || reservedSeats.includes(seatNumber)}
-      className={`w-12 h-12 rounded-lg flex items-center justify-center m-2 ${getSeatStyle(
-        seatNumber
-      )}`}
-      activeOpacity={0.8}
-    >
-      <Text className="text-white font-bold">
-        {seatNumber === 1 ? (
-          <Feather name="user" size={20} color="white" /> // Driver icon
-        ) : (
+  const renderSeat = ({ item: seatNumber }) => {
+    if (seatNumber === 0) {
+      return <View className="w-14 h-14 m-2" />;
+    }
+
+    return (
+      <TouchableOpacity
+        onPress={() => handleSeatClick(seatNumber)}
+        disabled={seatNumber === 1 || reservedSeats.includes(seatNumber)}
+        className={`w-14 h-14 rounded-lg flex items-center justify-center m-2 ${getSeatStyle(
           seatNumber
-        )}
-      </Text>
-    </TouchableOpacity>
-  );
+        )}`}
+        activeOpacity={0.8}
+      >
+        <Text className="text-white font-bold">
+          {seatNumber === 1 ? (
+            <Feather name="user" size={20} color="white" /> // Driver icon
+          ) : (
+            seatNumber
+          )}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   const renderRow = ({ item: row }) => (
     <View className="flex-row justify-center">
@@ -111,13 +196,24 @@ const SelectSeats = () => {
     </View>
   );
 
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-100 justify-center items-center">
+        <ActivityIndicator size="large" color="#10B981" />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         {/* Header */}
         <View className="flex-row justify-between items-center p-4">
           <TouchableOpacity
-            onPress={() => router.push("/availableTaxibe")}
+            onPress={() => router.push({
+              pathname: "/availableTaxibe",
+              params: { from, to, date }
+            })}
             className="bg-gray-200 p-2 rounded-full"
           >
             <Feather name="arrow-left" size={24} color="gray" />
@@ -129,7 +225,7 @@ const SelectSeats = () => {
         </View>
 
         {/* Seat Layout */}
-        <View className="bg-white rounded-xl shadow-md p-4 mx-4 mb-6">
+        <View className="bg-white rounded-xl shadow-md p-4 mx-4 mb-6 border-2 border-gray-200">
           <FlatList
             data={vehicleLayout}
             renderItem={renderRow}
@@ -193,15 +289,15 @@ const SelectSeats = () => {
 
           <TouchableOpacity
             onPress={handleReservation}
-            disabled={selectedSeats.length === 0}
+            disabled={selectedSeats.length === 0 || isSubmitting}
             className={`mt-4 p-3 rounded-lg flex-row items-center justify-center ${
-              selectedSeats.length > 0 ? "bg-blue-500" : "bg-gray-400"
+              selectedSeats.length > 0 && !isSubmitting ? "bg-blue-500" : "bg-gray-400"
             }`}
           >
             <Text className="text-white font-bold text-lg mr-2">
-              Réserver {selectedSeats.length > 0 ? `(${selectedSeats.length})` : ""}
+              {isSubmitting ? 'Réservation en cours...' : `Réserver ${selectedSeats.length > 0 ? `(${selectedSeats.length})` : ""}`}
             </Text>
-            <Feather name="check" size={20} color="white" />
+            {!isSubmitting && <Feather name="check" size={20} color="white" />}
           </TouchableOpacity>
         </View>
 

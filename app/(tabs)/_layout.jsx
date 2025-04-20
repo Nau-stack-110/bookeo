@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
-
+import { FontAwesome5 } from "@expo/vector-icons";
 export default function TabsLayout() {
   return (
     <Tabs
@@ -63,6 +63,27 @@ export default function TabsLayout() {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'person' : 'person-outline'} color={color} size={24} />
+          ),
+        }}
+      />
+      
+      <Tabs.Screen
+        name="my-tickets"
+        options={{
+          title: 'Tickets',
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <FontAwesome5 name={focused ? 'ticket-alt' : 'ticket-alt'} color={color} size={24} />
+          ),
+        }}
+      />
+    <Tabs.Screen
+        name="payment"
+        options={{
+          title: 'Payment',
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'card' : 'card-outline'} color={color} size={24} />
           ),
         }}
       />
