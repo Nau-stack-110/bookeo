@@ -31,8 +31,6 @@ export default function App() {
       </ScrollView>
       <StatusBar style="light" backgroundColor='#161622'/>
 
-      {/* <Text className="text-3xl font-bold">Naunau! </Text>
-      <Link href="/home" className='text-blue-600 font-medium ' >Go to home</Link> */}
     </SafeAreaView>
   );
 }

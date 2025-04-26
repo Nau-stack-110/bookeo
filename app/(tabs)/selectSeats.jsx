@@ -5,12 +5,10 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  ScrollView,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -135,9 +133,7 @@ const SelectSeats = () => {
         }
       );
 
-      // Update reserved seats immediately after successful reservation
       setReservedSeats([...reservedSeats, ...selectedSeats]);
-      // Clear selected seats
       setSelectedSeats([]);
       
       alert(`Réservation réussie pour ${selectedSeats.length} siège(s)`);
@@ -150,7 +146,6 @@ const SelectSeats = () => {
       });
     } catch (error) {
       console.error('Erreur lors de la réservation:', error);
-      console.error('Détails de l\'erreur:', error.response?.data);
       const errorMessage = error.response?.data?.detail || 
                          error.response?.data?.non_field_errors?.[0] || 
                          'Une erreur est survenue lors de la réservation';
@@ -176,7 +171,7 @@ const SelectSeats = () => {
       >
         <Text className="text-white font-bold">
           {seatNumber === 1 ? (
-            <Feather name="user" size={20} color="white" /> // Driver icon
+            <Feather name="user" size={20} color="white" />
           ) : (
             seatNumber
           )}
@@ -206,114 +201,94 @@ const SelectSeats = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        {/* Header */}
-        <View className="flex-row justify-between items-center p-4">
-          <TouchableOpacity
-            onPress={() => router.push({
-              pathname: "/availableTaxibe",
-              params: { from, to, date }
-            })}
-            className="bg-gray-200 p-2 rounded-full"
-          >
-            <Feather name="arrow-left" size={24} color="gray" />
-          </TouchableOpacity>
-          <Text className="text-lg font-bold text-green-700">
-            {marque} - {totalPlaces} places
-          </Text>
-          <View className="w-10" /> {/* Spacer */}
-        </View>
+      {/* Header */}
+      <View className="flex-row justify-between items-center p-4">
+        <TouchableOpacity
+          onPress={() => router.push({
+            pathname: "/availableTaxibe",
+            params: { from, to, date }
+          })}
+          className="bg-gray-200 p-2 rounded-full"
+        >
+          <Feather name="arrow-left" size={24} color="gray" />
+        </TouchableOpacity>
+        <Text className="text-lg font-bold text-green-700">
+          {marque} - {totalPlaces} places
+        </Text>
+        <View className="w-10" />
+      </View>
 
-        {/* Seat Layout */}
-        <View className="bg-white rounded-xl shadow-md p-4 mx-4 mb-6 border-2 border-gray-200">
-          <FlatList
-            data={vehicleLayout}
-            renderItem={renderRow}
-            keyExtractor={(_, index) => index.toString()}
-            showsVerticalScrollIndicator={false}
-          />
-        </View>
-
-        {/* Legend */}
-        <View className="bg-white rounded-xl shadow-md p-4 mx-4 mb-6">
-          <View className="flex-row flex-wrap justify-between">
-            <View className="flex-row items-center mb-2">
-              <View className="w-4 h-4 bg-green-500 rounded mr-2" />
-              <Text className="text-sm text-gray-700">Disponible</Text>
-            </View>
-            <View className="flex-row items-center mb-2">
-              <View className="w-4 h-4 bg-red-500 rounded mr-2" />
-              <Text className="text-sm text-gray-700">Réservé</Text>
-            </View>
-            <View className="flex-row items-center mb-2">
-              <View className="w-4 h-4 bg-blue-500 rounded mr-2" />
-              <Text className="text-sm text-gray-700">Sélectionné</Text>
-            </View>
-            <View className="flex-row items-center mb-2">
-              <View className="w-4 h-4 bg-gray-800 rounded mr-2" />
-              <Text className="text-sm text-gray-700">Conducteur</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Reservation Summary */}
-        <View className="bg-white rounded-xl shadow-md p-4 mx-4 mb-6">
-          {selectedSeats.length > 0 ? (
-            <>
-              <Text className="font-semibold text-gray-800 mb-2">
-                Sièges sélectionnés :
-              </Text>
-              {selectedSeats.map((seat) => (
-                <View
-                  key={seat}
-                  className="flex-row justify-between bg-gray-50 p-2 rounded mb-2"
-                >
-                  <Text className="text-gray-700">Siège {seat}</Text>
-                  <Text className="font-semibold text-gray-800">10000 Ar</Text>
-                </View>
-              ))}
-              <View className="border-t border-gray-200 pt-2">
-                <View className="flex-row justify-between">
-                  <Text className="font-bold text-gray-800">Total :</Text>
-                  <Text className="font-bold text-gray-800">
-                    {selectedSeats.length * 10000} Ar
-                  </Text>
-                </View>
+      <FlatList
+        data={vehicleLayout}
+        renderItem={renderRow}
+        keyExtractor={(_, index) => index.toString()}
+        showsVerticalScrollIndicator={false}
+        ListFooterComponent={
+          <>
+            {/* Légende */}
+            <View className="bg-white rounded-xl shadow-md p-4 mx-4 mt-6 mb-4">
+              <View className="flex-row flex-wrap justify-between">
+                {[
+                  ["bg-green-500", "Disponible"],
+                  ["bg-red-500", "Réservé"],
+                  ["bg-blue-500", "Sélectionné"],
+                  ["bg-gray-800", "Conducteur"]
+                ].map(([color, label]) => (
+                  <View key={label} className="flex-row items-center mb-2">
+                    <View className={`w-4 h-4 ${color} rounded mr-2`} />
+                    <Text className="text-sm text-gray-700">{label}</Text>
+                  </View>
+                ))}
               </View>
-            </>
-          ) : (
-            <Text className="text-center text-gray-500 py-4">
-              Sélectionnez vos sièges
-            </Text>
-          )}
+            </View>
 
-          <TouchableOpacity
-            onPress={handleReservation}
-            disabled={selectedSeats.length === 0 || isSubmitting}
-            className={`mt-4 p-3 rounded-lg flex-row items-center justify-center ${
-              selectedSeats.length > 0 && !isSubmitting ? "bg-blue-500" : "bg-gray-400"
-            }`}
-          >
-            <Text className="text-white font-bold text-lg mr-2">
-              {isSubmitting ? 'Réservation en cours...' : `Réserver ${selectedSeats.length > 0 ? `(${selectedSeats.length})` : ""}`}
-            </Text>
-            {!isSubmitting && <Feather name="check" size={20} color="white" />}
-          </TouchableOpacity>
-        </View>
+            {/* Résumé Réservation */}
+            <View className="bg-white rounded-xl shadow-md p-4 mx-4 mb-6">
+              {selectedSeats.length > 0 ? (
+                <>
+                  <Text className="font-semibold text-gray-800 mb-2">
+                    Sièges sélectionnés :
+                  </Text>
+                  {selectedSeats.map((seat) => (
+                    <View
+                      key={seat}
+                      className="flex-row justify-between bg-gray-50 p-2 rounded mb-2"
+                    >
+                      <Text className="text-gray-700">Siège {seat}</Text>
+                      <Text className="font-semibold text-gray-800">10000 Ar</Text>
+                    </View>
+                  ))}
+                  <View className="border-t border-gray-200 pt-2">
+                    <View className="flex-row justify-between">
+                      <Text className="font-bold text-gray-800">Total :</Text>
+                      <Text className="font-bold text-gray-800">
+                        {selectedSeats.length * 10000} Ar
+                      </Text>
+                    </View>
+                  </View>
+                </>
+              ) : (
+                <Text className="text-center text-gray-500 py-4">
+                  Sélectionnez vos sièges
+                </Text>
+              )}
+            </View>
 
-        {/* Alert Animation */}
-        {showAlert && (
-          <Animated.View
-            entering={FadeIn}
-            exiting={FadeOut}
-            className="absolute top-10 left-4 right-4 bg-red-500 p-3 rounded-lg shadow-lg"
-          >
-            <Text className="text-white text-center">
-              Maximum {maxSeats} sièges autorisés
-            </Text>
-          </Animated.View>
-        )}
-      </ScrollView>
+            {/* Bouton Réserver */}
+            <TouchableOpacity
+              onPress={handleReservation}
+              disabled={isSubmitting}
+              className={`mx-4 mb-6 rounded-lg p-4 ${
+                isSubmitting ? "bg-gray-400" : "bg-green-600"
+              }`}
+            >
+              <Text className="text-white text-center font-bold text-lg">
+                {isSubmitting ? "Réservation en cours..." : "Réserver"}
+              </Text>
+            </TouchableOpacity>
+          </>
+        }
+      />
     </SafeAreaView>
   );
 };

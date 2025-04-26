@@ -27,20 +27,11 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="home"
-        options={{
-          title: 'Home',
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'home-sharp' : 'home-outline'} color={color} size={24} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="availableTaxibe"
         options={{
           title: 'availableTaxibe',
           headerShown: false,
+          tabBarButton: () => null,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'create' : 'create-outline'} color={color} size={24} />
           ),
@@ -51,11 +42,22 @@ export default function TabsLayout() {
         options={{
           title: 'SelectSeats',
           headerShown: false,
+          tabBarButton: () => null,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'bookmark' : 'bookmark-outline'} color={color} size={24} />
           ),
         }}
       />
+        <Tabs.Screen
+          name="home"
+          options={{
+            title: 'Home',
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicons name={focused ? 'home-sharp' : 'home-outline'} color={color} size={24} />
+            ),
+          }}
+        />
       <Tabs.Screen
         name="profile"
         options={{
@@ -72,6 +74,7 @@ export default function TabsLayout() {
         options={{
           title: 'Tickets',
           headerShown: false,
+          tabBarButton: () => null,
           tabBarIcon: ({ color, focused }) => (
             <FontAwesome5 name={focused ? 'ticket-alt' : 'ticket-alt'} color={color} size={24} />
           ),
@@ -82,6 +85,7 @@ export default function TabsLayout() {
         options={{
           title: 'Payment',
           headerShown: false,
+          tabBarButton: () => null,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'card' : 'card-outline'} color={color} size={24} />
           ),

@@ -43,8 +43,8 @@ const Signin = () => {
     <SafeAreaView className='bg-primary h-full'>
       <ScrollView>
         <View className='justify-center h-[85vh] w-full px-4 my-6'>
-          <Text className='text-white text-[45px] font-semibold italic mb-2'>Naunau  <FontAwesome size={40} color={'#fdba75'} name='home'/></Text>
-          <Text className='text-3xl font-semibold mt-10 text-white font-serif'>Log in to Naunau</Text>
+          <Text className='text-white text-[45px] font-semibold italic mb-2'>TaxiBe  <FontAwesome size={40} color={'#fdba75'} name='home'/></Text>
+          <Text className='text-3xl font-semibold mt-10 text-white font-serif'>Log in to TaxiBe</Text>
           {error && <Text className='text-red-500 mt-4'>{error}</Text>}
           <FormField
             title='Email'

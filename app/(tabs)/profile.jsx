@@ -10,17 +10,16 @@ import {
   TextInput,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import Animated, {
   FadeInDown,
   FadeInUp,
   BounceIn,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
-// Static profile image (replace with your asset)
 import profileImage from "../../assets/robot.jpg";
 
 export default function Profile() {
@@ -36,23 +35,23 @@ export default function Profile() {
   });
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
-  const [editMode, setEditMode] = useState('profile'); // 'profile' or 'password'
+  const [editMode, setEditMode] = useState("profile");
   const [formData, setFormData] = useState({
-    fullname: '',
-    bio: '',
-    currentPassword: '',
-    newPassword: '',
-    confirmNewPassword: '',
+    fullname: "",
+    bio: "",
+    old_password: "",
+    new_password: "",
+    confirmNewPassword:""
   });
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const token = await AsyncStorage.getItem('accessToken');
+        const token = await AsyncStorage.getItem("accessToken");
         if (token) {
           console.log("Token trouvé:", token);
           const response = await axios.get(
-            'https://vital-lizard-adequately.ngrok-free.app/api/me/',
+            "https://vital-lizard-adequately.ngrok-free.app/api/me/",
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -64,7 +63,9 @@ export default function Profile() {
           setUserData({
             username: username || "Utilisateur",
             email: email || "email@example.com",
-            created_at: profile?.created_at ? new Date(profile.created_at).toLocaleDateString('fr-FR') : "Date inconnue",
+            created_at: profile?.created_at
+              ? new Date(profile.created_at).toLocaleDateString("fr-FR")
+              : "Date inconnue",
             fullname: profile?.fullname || "",
             bio: profile?.bio || "",
             image: profile?.image || "",
@@ -110,47 +111,46 @@ export default function Profile() {
   }, []);
 
   const handleLogout = () => {
-    Alert.alert(
-      "Confirmation",
-      "Êtes-vous sûr de vouloir vous déconnecter ?",
-      [
-        { text: "Annuler", style: "cancel" },
-        { 
-          text: "Déconnexion", 
-          onPress: async () => {
-            try {
-              await AsyncStorage.removeItem('accessToken');
-              await AsyncStorage.removeItem('refreshToken');
-              Alert.alert("Succès", "Vous avez été déconnecté avec succès.");
-              router.replace('/sign-in');
-            } catch (error) {
-              console.error("Erreur lors de la déconnexion:", error);
-              Alert.alert("Erreur", "Erreur lors de la déconnexion. Veuillez réessayer.");
-            }
-          },
-          style: "destructive" 
-        }
-      ]
-    );
+    Alert.alert("Confirmation", "Êtes-vous sûr de vouloir vous déconnecter ?", [
+      { text: "Annuler", style: "cancel" },
+      {
+        text: "Déconnexion",
+        onPress: async () => {
+          try {
+            await AsyncStorage.removeItem("accessToken");
+            await AsyncStorage.removeItem("refreshToken");
+            Alert.alert("Succès", "Vous avez été déconnecté avec succès.");
+            router.replace("/sign-in");
+          } catch (error) {
+            console.error("Erreur lors de la déconnexion:", error);
+            Alert.alert(
+              "Erreur",
+              "Erreur lors de la déconnexion. Veuillez réessayer."
+            );
+          }
+        },
+        style: "destructive",
+      },
+    ]);
   };
 
   const handleEditProfile = () => {
-    setEditMode('profile');
+    setEditMode("profile");
     setModalVisible(true);
   };
 
   const handleEditPassword = () => {
-    setEditMode('password');
+    setEditMode("password");
     setModalVisible(true);
   };
 
   const handleSaveChanges = async () => {
-    if (editMode === 'profile') {
+    if (editMode === "profile") {
       // Update profile logic here
       try {
-        const token = await AsyncStorage.getItem('accessToken');
+        const token = await AsyncStorage.getItem("accessToken");
         await axios.put(
-          'https://vital-lizard-adequately.ngrok-free.app/api/user-profile/',
+          "https://vital-lizard-adequately.ngrok-free.app/api/user-profile/",
           {
             fullname: formData.fullname,
             bio: formData.bio,
@@ -173,17 +173,17 @@ export default function Profile() {
         Alert.alert("Erreur", "Erreur lors de la mise à jour du profil.");
       }
     } else {
-      if (formData.newPassword !== formData.confirmNewPassword) {
+      if (formData.new_password !== formData.confirmNewPassword) {
         Alert.alert("Erreur", "Les nouveaux mots de passe ne correspondent pas.");
         return;
       }
       try {
-        const token = await AsyncStorage.getItem('accessToken');
+        const token = await AsyncStorage.getItem("accessToken");
         await axios.post(
-          'https://vital-lizard-adequately.ngrok-free.app/api/change-password/', 
+          "https://vital-lizard-adequately.ngrok-free.app/api/change-password/",
           {
-            old_password: formData.currentPassword,
-            new_password: formData.newPassword,
+            old_password: formData.old_password,
+            new_password: formData.new_password,
           },
           {
             headers: {
@@ -195,13 +195,16 @@ export default function Profile() {
         setModalVisible(false);
         setFormData({
           ...formData,
-          currentPassword: '',
-          newPassword: '',
-          confirmNewPassword: '',
+          old_password: "",
+          new_password: "",
+          confirmNewPassword:"",
         });
       } catch (error) {
         console.error("Erreur lors du changement de mot de passe:", error);
-        Alert.alert("Erreur", "Erreur lors du changement de mot de passe. Vérifiez votre mot de passe actuel.");
+        Alert.alert(
+          "Erreur",
+          "Erreur lors du changement de mot de passe. Vérifiez votre mot de passe actuel."
+        );
       }
     }
   };
@@ -214,12 +217,8 @@ export default function Profile() {
           entering={FadeInUp.duration(500)}
           className="pt-12 pb-6 px-4 bg-green-700"
         >
-          <Text className="text-3xl font-bold text-white">
-            Profil
-          </Text>
-          <Text className="text-sm text-gray-200 mt-1">
-            Gérez votre compte
-          </Text>
+          <Text className="text-3xl font-bold text-white">Profil</Text>
+          <Text className="text-sm text-gray-200 mt-1">Gérez votre compte</Text>
         </Animated.View>
 
         {/* Profile Card */}
@@ -235,14 +234,19 @@ export default function Profile() {
             <View className="ml-4 flex-1">
               <View className="flex-row items-center">
                 <Text className="text-xl font-semibold text-gray-800">
-                  {loading ? "Chargement..." : userData.username}
+                  {loading ? "Chargement..." : userData.username.username}
                 </Text>
                 {userData.verified && (
-                  <Feather name="check-circle" size={18} color="#10B981" style={{ marginLeft: 8 }} />
+                  <Feather
+                    name="check-circle"
+                    size={18}
+                    color="#10B981"
+                    style={{ marginLeft: 8 }}
+                  />
                 )}
               </View>
               <Text className="text-sm text-gray-600">
-                {loading ? "Chargement..." : userData.email}
+                {loading ? "Chargement..." : userData.username.email}
               </Text>
               <Text className="text-xs text-gray-500 mt-1">
                 Inscrit le {loading ? "..." : userData.created_at}
@@ -265,9 +269,7 @@ export default function Profile() {
               activeOpacity={0.8}
               onPress={handleEditProfile}
             >
-              <Text className="text-white font-medium">
-                Modifier le Profil
-              </Text>
+              <Text className="text-white font-medium">Modifier le Profil</Text>
             </TouchableOpacity>
             <TouchableOpacity
               className="bg-blue-500 py-2 px-4 rounded-lg self-start"
@@ -291,21 +293,19 @@ export default function Profile() {
             onPress={() => router.push("/my-tickets")}
             activeOpacity={0.7}
           >
-            <Feather name="ticket" size={24} color="#10B981" />
+            <FontAwesome5 name="ticket" size={24} color="#10B981" />
             <Text className="ml-4 text-gray-800 font-medium">
               Mes Réservations
             </Text>
           </TouchableOpacity>
-  
+
           <TouchableOpacity
             className="flex-row items-center bg-white p-4 rounded-xl mb-3 shadow-sm"
             onPress={handleLogout}
             activeOpacity={0.7}
           >
             <Feather name="log-out" size={24} color="#10B981" />
-            <Text className="ml-4 text-gray-800 font-medium">
-              Déconnexion
-            </Text>
+            <Text className="ml-4 text-gray-800 font-medium">Déconnexion</Text>
           </TouchableOpacity>
         </Animated.View>
 
@@ -317,22 +317,28 @@ export default function Profile() {
           onRequestClose={() => setModalVisible(false)}
         >
           <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-            <Animated.View 
+            <Animated.View
               entering={BounceIn.duration(300)}
               className="bg-white rounded-xl p-6 w-11/12 max-h-[50%]"
             >
               <Text className="text-2xl font-bold text-gray-800 mb-4">
-                {editMode === 'profile' ? 'Modifier le Profil' : 'Changer le Mot de Passe'}
+                {editMode === "profile"
+                  ? "Modifier le Profil"
+                  : "Changer le Mot de Passe"}
               </Text>
-              
-              {editMode === 'profile' ? (
+
+              {editMode === "profile" ? (
                 <View className="space-y-4">
                   <View>
-                    <Text className="text-gray-700 font-medium mb-1">Nom complet</Text>
+                    <Text className="text-gray-700 font-medium mb-1">
+                      Nom complet
+                    </Text>
                     <TextInput
                       className="bg-gray-100 p-3 rounded-lg text-gray-800"
                       value={formData.fullname}
-                      onChangeText={(text) => setFormData({ ...formData, fullname: text })}
+                      onChangeText={(text) =>
+                        setFormData({ ...formData, fullname: text })
+                      }
                       placeholder="Entrez votre nom complet"
                     />
                   </View>
@@ -341,7 +347,9 @@ export default function Profile() {
                     <TextInput
                       className="bg-gray-100 p-3 rounded-lg text-gray-800 h-24"
                       value={formData.bio}
-                      onChangeText={(text) => setFormData({ ...formData, bio: text })}
+                      onChangeText={(text) =>
+                        setFormData({ ...formData, bio: text })
+                      }
                       placeholder="Parlez de vous..."
                       multiline
                     />
@@ -350,33 +358,44 @@ export default function Profile() {
               ) : (
                 <View className="space-y-4">
                   <View>
-                    <Text className="text-gray-700 font-medium mb-1">Mot de passe actuel</Text>
+                    <Text className="text-gray-700 font-medium mb-1">
+                      Ancien mot de passe
+                    </Text>
                     <TextInput
                       className="bg-gray-100 p-3 rounded-lg text-gray-800"
-                      value={formData.currentPassword}
-                      onChangeText={(text) => setFormData({ ...formData, currentPassword: text })}
-                      placeholder="Entrez votre mot de passe actuel"
                       secureTextEntry
+                      value={formData.old_password}
+                      onChangeText={(text) =>
+                        setFormData({ ...formData, old_password: text })
+                      }
                     />
                   </View>
+
                   <View>
-                    <Text className="text-gray-700 font-medium mb-1">Nouveau mot de passe</Text>
+                    <Text className="text-gray-700 font-medium mb-1">
+                      Nouveau mot de passe
+                    </Text>
                     <TextInput
                       className="bg-gray-100 p-3 rounded-lg text-gray-800"
-                      value={formData.newPassword}
-                      onChangeText={(text) => setFormData({ ...formData, newPassword: text })}
-                      placeholder="Entrez votre nouveau mot de passe"
                       secureTextEntry
+                      value={formData.new_password}
+                      onChangeText={(text) =>
+                        setFormData({ ...formData, new_password: text })
+                      }
                     />
                   </View>
+
                   <View>
-                    <Text className="text-gray-700 font-medium mb-1">Confirmer le nouveau mot de passe</Text>
+                    <Text className="text-gray-700 font-medium mb-1">
+                      Confirmer le nouveau mot de passe
+                    </Text>
                     <TextInput
                       className="bg-gray-100 p-3 rounded-lg text-gray-800"
+                      secureTextEntry
                       value={formData.confirmNewPassword}
-                      onChangeText={(text) => setFormData({ ...formData, confirmNewPassword: text })}
-                      placeholder="Confirmez votre nouveau mot de passe"
-                      secureTextEntry
+                      onChangeText={(text) =>
+                        setFormData({ ...formData, confirmNewPassword: text })
+                      }
                     />
                   </View>
                 </View>

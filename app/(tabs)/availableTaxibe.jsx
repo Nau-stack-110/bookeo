@@ -21,18 +21,23 @@ const AvailableTaxibe = () => {
   const [taxibes, setTaxibes] = useState([]);
   const [selectedCooperative, setSelectedCooperative] = useState("Toutes");
   const [loading, setLoading] = useState(true);
-  const [cooperatives, setCooperatives] = useState([{ id: "Toutes", nom: "Toutes les coopératives" }]);
+  const [cooperatives, setCooperatives] = useState([
+    { id: "Toutes", nom: "Toutes les coopératives" },
+  ]);
 
   useEffect(() => {
     const fetchTaxibes = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('https://vital-lizard-adequately.ngrok-free.app/api/available_taxibe/', {
-          params: { from, to, date }
-        });
+        const response = await axios.get(
+          "https://vital-lizard-adequately.ngrok-free.app/api/available_taxibe/",
+          {
+            params: { from, to, date },
+          }
+        );
         setTaxibes(response.data);
       } catch (error) {
-        console.error('Error fetching taxibes:', error);
+        console.error("Error fetching taxibes:", error);
       } finally {
         setLoading(false);
       }
@@ -40,7 +45,9 @@ const AvailableTaxibe = () => {
 
     const fetchCooperatives = async () => {
       try {
-        const response = await axios.get('https://vital-lizard-adequately.ngrok-free.app/api/taxibeget/');
+        const response = await axios.get(
+          "https://vital-lizard-adequately.ngrok-free.app/api/taxibeget/"
+        );
         const uniqueCooperatives = Array.from(
           new Map(
             response.data.map((item) => [
@@ -49,9 +56,12 @@ const AvailableTaxibe = () => {
             ])
           ).values()
         );
-        setCooperatives([{ id: "Toutes", nom: "Toutes les coopératives" }, ...uniqueCooperatives]);
+        setCooperatives([
+          { id: "Toutes", nom: "Toutes les coopératives" },
+          ...uniqueCooperatives,
+        ]);
       } catch (error) {
-        console.error('Error fetching cooperatives:', error);
+        console.error("Error fetching cooperatives:", error);
       }
     };
 
@@ -60,29 +70,16 @@ const AvailableTaxibe = () => {
   }, [from, to, date]);
 
   const filteredTaxibes =
-  selectedCooperative === "Toutes"
-    ? taxibes
-    : taxibes.filter(
-        (t) => t.taxibe.cooperative === Number(selectedCooperative)
-      );
+    selectedCooperative === "Toutes"
+      ? taxibes
+      : taxibes.filter(
+          (t) => t.taxibe.cooperative === Number(selectedCooperative)
+        );
 
-
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        return date.toLocaleDateString('fr-FR', options);
-    };
-
-  const handleReservationClick = (taxibe) => {
-    router.push({
-      pathname: "/selectSeats",
-      params: {
-        totalPlaces: taxibe.taxibe.nb_place,
-        availablePlaces: taxibe.taxibe.place_dispo,
-        marque: taxibe.taxibe.marque,
-        trajetId: taxibe.id,
-      },
-    });
+  const formatDate = (dateString) => {
+    const d = new Date(dateString);
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return d.toLocaleDateString("fr-FR", options);
   };
 
   const renderTaxibe = ({ item }) => (
@@ -101,25 +98,36 @@ const AvailableTaxibe = () => {
       className="bg-white rounded-xl shadow-md p-4 mb-4 mx-2 flex-row items-center justify-between"
     >
       <Image
-        source={`https://vital-lizard-adequately.ngrok-free.app/${item.taxibe.photo}`}
+        source={{
+          uri: `https://vital-lizard-adequately.ngrok-free.app/${item.taxibe.photo}`,
+        }}
         className="w-20 h-20 rounded-xl"
         resizeMode="cover"
       />
       <View className="flex-1 mx-4">
-        <Text className="font-bold text-blue-500 text-lg">{item.taxibe.marque}</Text>
-        <Text className="text-gray-600 text-sm">
-          <Feather name="home" size={14} color="gray" /> {item.taxibe.cooperative || 'N/A'}
+        <Text className="font-bold text-blue-500 text-lg">
+          {item.taxibe.marque}
         </Text>
+
+        <Text className="text-gray-600 text-sm">
+          <Feather name="home" size={14} color="gray" />{" "}
+          {item.taxibe.cooperative || "N/A"}
+        </Text>
+
         <Text className="text-gray-600 text-sm">
           <Feather name="hash" size={14} color="gray" /> {item.taxibe.matricule}
         </Text>
+
         <Text className="text-gray-600 text-sm">
           <Feather name="user" size={14} color="gray" /> {item.taxibe.chauffeur}
         </Text>
+
         <Text className="text-green-600 text-sm">
-          <Feather name="users" size={14} color="gray" /> {item.place_dispo}/{item.taxibe.nb_place} places
+          <Feather name="users" size={14} color="gray" /> {item.place_dispo}/
+          {item.taxibe.nb_place} places
         </Text>
       </View>
+
       <Feather name="chevron-right" size={24} color="gray" />
     </TouchableOpacity>
   );
