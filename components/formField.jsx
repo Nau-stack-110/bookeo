@@ -2,29 +2,48 @@ import { View, Text, TextInput, TouchableOpacity } from 'react-native'
 import React, { useState } from 'react'
 import { FontAwesome } from '@expo/vector-icons'
 
-const FormField = ({title, otherStyles, value, handleChangeText, placeholder, ...props}) => {
-    const [showPassword, setshowPassword] = useState(false)
+const FormField = ({ title, value, placeholder, handleChangeText, error, iconName, ...props }) => {
+  const [showPassword, setShowPassword] = useState(false)
+
   return (
-    <View className={`space-y-2 ${otherStyles}`}>
-      <Text className='text-gray-100 text-base mb-1 font-sans-serif'>{title}</Text>
-      <View className="w-full h-16 px-4 bg-black rounded-2xl border-2 border-black
-       focus:border-red-300 flex-row items-center">
+    <View style={{ marginBottom: 20 }}>
+      <View style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F5F5F5',
+        borderRadius: 12,
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderWidth: error ? 1 : 0,
+        borderColor: error ? '#FF0000' : 'transparent'
+      }}>
+        <FontAwesome name={iconName} size={24} color="#008000" style={{ marginRight: 10 }} />
         <TextInput
-            className="flex-1 text-white text-base font-semibold"
-            value={value}
-            placeholder={placeholder}
-            placeholderTextColor="#7b7b8b"
-            onChangeText={handleChangeText}
-            secureTextEntry={title === 'Password' && !showPassword }
+          style={{
+            flex: 1,
+            fontSize: 16,
+            color: '#333',
+            fontFamily: 'Roboto'
+          }}
+          placeholder={placeholder}
+          placeholderTextColor="#999"
+          value={value}
+          onChangeText={handleChangeText}
+          secureTextEntry={(title === 'Password' || title === 'Confirm Password') && !showPassword}
+          {...props}
         />
-        {title === "Password" && (
-            <TouchableOpacity onPress={() => setshowPassword(!showPassword)}>
-                <FontAwesome name={!showPassword ? 'eye' : 'eye-slash'} color={'white'} size={18} />
-            </TouchableOpacity>
+        {(title === 'Password' || title === 'Confirm Password') && (
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <FontAwesome name={showPassword ? 'eye-slash' : 'eye'} size={18} color="#008000" />
+          </TouchableOpacity>
         )}
       </View>
+      {error && (
+        <Text style={{ color: '#FF0000', fontSize: 14, marginTop: 5 }}>
+          {error}
+        </Text>
+      )}
     </View>
-
   )
 }
 

@@ -3,7 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ImageBackground,
+  Image,
   Alert,
   ActivityIndicator,
 } from "react-native";
@@ -13,27 +13,12 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Feather } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import taxiBackground from "../../assets/robot.jpg";
+import logo from "../../assets/taxibelogo.png";
 
 const VILLE_CHOICES = [
-  "Antsirabe",
-  "Ambatolampy",
-  "Antananarivo",
-  "Toamasina",
-  "Mahajanga",
-  "Antsiranana",
-  "Fianarantsoa",
-  "Toliara",
-  "Morondava",
-  "Moramanga",
-  "Mandoto",
-  "Tsiroanimandidy",
-  "Ambositra",
-  "Betafo",
-  "Morafeno",
-  "Ambalavao",
-  "Tôlanaro",
-  "Manakara",
+  "Antsirabe", "Ambatolampy", "Antananarivo", "Toamasina", "Mahajanga", "Antsiranana",
+  "Fianarantsoa", "Toliara", "Morondava", "Moramanga", "Mandoto", "Tsiroanimandidy",
+  "Ambositra", "Betafo", "Morafeno", "Ambalavao", "Tôlanaro", "Manakara",
 ];
 
 const Home = () => {
@@ -67,112 +52,105 @@ const Home = () => {
   const onDateChange = (event, selectedDate) => {
     const currentDate = selectedDate || travelDate;
     setShowDatePicker(false);
-    if (currentDate < new Date()) {
-      Alert.alert("Erreur", "Veuillez sélectionner une date future.");
-      return;
-    }
     setTravelDate(currentDate);
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
-      <View className="relative flex-1">
-        {/* Background Image */}
-        <ImageBackground
-          source={taxiBackground}
-          className="absolute inset-0 opacity-80"
-          resizeMode="cover"
-        >
-          <View className="absolute inset-0 bg-gradient-to-r from-green-900/80 to-blue-900/80" />
-        </ImageBackground>
+    <SafeAreaView className="flex-1 bg-white px-4">
+      <View className="items-center py-6">
+        <Image source={logo} resizeMode="contain" className="w-32 h-32 mb-2" />
+        <Text className="text-xl font-semibold text-green-700">
+          Bienvenue sur <Text className="text-red-600">TaxiBe</Text>
+        </Text>
+        <Text className="text-sm text-gray-600 text-center mt-1 px-4">
+          Réservez facilement votre place auprès des coopératives malgaches.
+        </Text>
+      </View>
 
-        {/* Form */}
-        <View className="flex-1 justify-center items-center px-4">
-          <View className="bg-white/95 p-6 rounded-3xl shadow-2xl w-full max-w-md">
-            <Text className="text-3xl font-bold text-green-700 mb-6 text-center">
-              <Text className="border-b-4 border-green-500">Planifiez</Text> votre trajet
-            </Text>
+      <View className="bg-white rounded-2xl shadow-md p-6">
+        <Text className="text-2xl font-bold text-center text-green-700 mb-4">
+          Planifiez votre trajet
+        </Text>
 
-            <View className="space-y-6">
-              {/* Departure City */}
-              <View>
-                <Text className="text-gray-700 mb-2 font-semibold">Départ</Text>
-                <View className="border-2 border-gray-200 rounded-xl bg-gray-50">
-                  <Picker
-                    selectedValue={fromCity}
-                    onValueChange={(itemValue) => setFromCity(itemValue)}
-                    style={{ height: 50 }}
-                    accessibilityLabel="Sélectionner la ville de départ"
-                  >
-                    {VILLE_CHOICES.map((city) => (
-                      <Picker.Item key={city} label={city} value={city} />
-                    ))}
-                  </Picker>
-                </View>
-              </View>
-
-              {/* Destination City */}
-              <View>
-                <Text className="text-gray-700 mb-2 font-semibold">Destination</Text>
-                <View className="border-2 border-gray-200 rounded-xl bg-gray-50">
-                  <Picker
-                    selectedValue={toCity}
-                    onValueChange={(itemValue) => setToCity(itemValue)}
-                    style={{ height: 50 }}
-                    accessibilityLabel="Sélectionner la ville de destination"
-                  >
-                    {VILLE_CHOICES.map((city) => (
-                      <Picker.Item key={city} label={city} value={city} />
-                    ))}
-                  </Picker>
-                </View>
-              </View>
-
-              {/* Travel Date */}
-              <View>
-                <Text className="text-gray-700 mb-2 font-semibold">Date de départ</Text>
-                <TouchableOpacity
-                  onPress={() => setShowDatePicker(true)}
-                  className="border-2 border-gray-200 rounded-xl p-3 bg-gray-50"
-                  accessibilityLabel="Sélectionner la date de départ"
-                >
-                  <Text className="text-gray-700">
-                    {travelDate.toLocaleDateString("fr-FR")}
-                  </Text>
-                </TouchableOpacity>
-                {showDatePicker && (
-                  <DateTimePicker
-                    value={travelDate}
-                    mode="date"
-                    display="default"
-                    onChange={onDateChange}
-                    minimumDate={new Date()}
-                    accessibilityLabel="Sélecteur de date"
-                  />
-                )}
-              </View>
-
-              {/* Search Button */}
-              <TouchableOpacity
-                onPress={handleSearch}
-                disabled={isLoading}
-                className={`bg-green-500 p-4 rounded-xl flex-row items-center justify-center ${
-                  isLoading ? "opacity-50" : ""
-                }`}
-                accessibilityLabel="Rechercher des trajets"
+        <View className="space-y-5">
+          {/* Ville de départ */}
+          <View className="mb-4">
+            <Text className="text-gray-800 mb-1 font-medium">Ville de départ</Text>
+            <View className="border border-gray-300 rounded-xl bg-gray-50">
+              <Picker
+                selectedValue={fromCity}
+                onValueChange={(value) => setFromCity(value)}
+                style={{ height: 50 }}
               >
-                {isLoading ? (
-                  <ActivityIndicator size="small" color="white" className="mr-2" />
-                ) : (
-                  <Feather name="arrow-right" size={24} color="white" className="mr-2" />
-                )}
-                <Text className="text-white font-bold text-lg">
-                  {isLoading ? "Recherche..." : "Rechercher"}
-                </Text>
-              </TouchableOpacity>
+                {VILLE_CHOICES.map((city) => (
+                  <Picker.Item key={city} label={city} value={city} />
+                ))}
+              </Picker>
             </View>
           </View>
+
+          {/* Ville d'arrivée */}
+          <View className="mb-4">
+            <Text className="text-gray-800 mb-1 font-medium">Ville d'arrivée</Text>
+            <View className="border border-gray-300 rounded-xl bg-gray-50">
+              <Picker
+                selectedValue={toCity}
+                onValueChange={(value) => setToCity(value)}
+                style={{ height: 50 }}
+              >
+                {VILLE_CHOICES.map((city) => (
+                  <Picker.Item key={city} label={city} value={city} />
+                ))}
+              </Picker>
+            </View>
+          </View>
+
+          {/* Date */}
+          <View className="mb-4">
+            <Text className="text-gray-800 mb-1 font-medium">Date de départ</Text>
+            <TouchableOpacity
+              onPress={() => setShowDatePicker(true)}
+              className="border border-gray-300 rounded-xl p-3 bg-gray-50"
+            >
+              <Text className="text-gray-700">
+                {travelDate.toLocaleDateString("fr-FR")}
+              </Text>
+            </TouchableOpacity>
+            {showDatePicker && (
+              <DateTimePicker
+                value={travelDate}
+                mode="date"
+                display="default"
+                onChange={onDateChange}
+                minimumDate={new Date()}
+              />
+            )}
+          </View>
+
+          {/* Bouton */}
+          <TouchableOpacity
+            onPress={handleSearch}
+            disabled={isLoading}
+            className={`flex-row justify-center items-center p-4 rounded-xl ${
+              isLoading ? "bg-green-400" : "bg-green-600"
+            }`}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#fff" className="mr-2" />
+            ) : (
+              <Feather name="search" size={20} color="white" className="mr-2" />
+            )}
+            <Text className="text-white text-lg font-semibold">
+              {isLoading ? "Recherche..." : "Rechercher"}
+            </Text>
+          </TouchableOpacity>
         </View>
+      </View>
+
+      <View className="items-center mt-6">
+        <Text className="text-gray-500 text-sm italic">
+          © 2025 Taxi-Brousse – Coopératives – Madagascar 🇲🇬
+        </Text>
       </View>
     </SafeAreaView>
   );

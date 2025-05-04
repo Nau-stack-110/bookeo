@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -11,13 +11,10 @@ const Payment = () => {
 
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
-  const [address, setAddress] = useState('');
-  const [cin, setCin] = useState('');
-  const [age, setAge] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Orange Money');
 
   const handlePayment = () => {
-    if (!email || !name || !address || !cin || !age || !paymentMethod) {
+    if (!email || !name || !paymentMethod) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
@@ -46,27 +43,6 @@ const Payment = () => {
         value={name}
         onChangeText={setName}
       />
-      <TextInput
-        className="bg-white p-2 rounded mb-2"
-        placeholder="Address"
-        value={address}
-        onChangeText={setAddress}
-      />
-      <TextInput
-        className="bg-white p-2 rounded mb-2"
-        placeholder="CIN"
-        value={cin}
-        onChangeText={setCin}
-        keyboardType="numeric"
-      />
-      <TextInput
-        className="bg-white p-2 rounded mb-2"
-        placeholder="Age"
-        value={age}
-        onChangeText={setAge}
-        keyboardType="numeric"
-      />
-
       <Picker
         selectedValue={paymentMethod}
         onValueChange={(itemValue) => setPaymentMethod(itemValue)}
