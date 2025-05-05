@@ -14,7 +14,8 @@ export default function TabsLayout() {
         headerShadowVisible: false,
         headerTintColor: '#fff',
         tabBarStyle: {
-          backgroundColor: '#1c1c1e',
+          // backgroundColor: '#1c1c1e',
+          backgroundColor: "#fff",
           borderTopWidth: 0,
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
@@ -29,7 +30,7 @@ export default function TabsLayout() {
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '600',
-          marginBottom: 4,
+          marginBottom: 12,
         },
       }}
     >

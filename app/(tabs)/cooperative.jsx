@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, TextInput, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, TextInput, ImageBackground } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import bgImage from "../../assets/bghome3.png";
 
 const CooperativeCard = ({ item, index }) => {
   const scale = useSharedValue(1);
@@ -140,9 +141,13 @@ const CooperativeList = () => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <View className="bg-[#25292e] px-4 py-3">
-        <Text className="text-2xl font-bold text-white text-center">Nos Coopératives Membres</Text>
+    <ImageBackground
+    source = {bgImage}
+    style = {{flex: 1}}
+    resizeMode="cover"> 
+    <SafeAreaView className="flex-1">
+      <View className="px-4 py-3">
+        <Text className="text-2xl font-bold text-[#25292e] italic text-center">Nos Coopératives Membres</Text>
       </View>
       <TextInput
         className="mx-4 my-4 p-3 bg-white rounded-xl text-base text-gray-800 border border-gray-200 shadow-sm"
@@ -161,6 +166,7 @@ const CooperativeList = () => {
         showsVerticalScrollIndicator={false}
       />
     </SafeAreaView>
+    </ImageBackground>
   );
 };
 
