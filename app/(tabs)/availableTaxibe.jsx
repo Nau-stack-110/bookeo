@@ -5,18 +5,26 @@ import {
   TouchableOpacity,
   FlatList,
   Image,
+  ImageBackground,
   ActivityIndicator,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
+import {
+  Feather,
+  MaterialIcons,
+  FontAwesome5,
+  Entypo,
+  AntDesign,
+} from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 
+const backgroundImage = require("../../assets/bghome3.png")
+
 const AvailableTaxibe = () => {
   const router = useRouter();
-  const params = useLocalSearchParams();
-  const { from, to, date } = params;
+  const { from, to, date } = useLocalSearchParams();
 
   const [taxibes, setTaxibes] = useState([]);
   const [selectedCooperative, setSelectedCooperative] = useState("Toutes");
@@ -26,47 +34,55 @@ const AvailableTaxibe = () => {
   ]);
 
   useEffect(() => {
-    const fetchTaxibes = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
-          "https://vital-lizard-adequately.ngrok-free.app/api/available_taxibe/",
-          {
-            params: { from, to, date },
-          }
-        );
-        setTaxibes(response.data);
-      } catch (error) {
-        console.error("Error fetching taxibes:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    const fetchCooperatives = async () => {
-      try {
-        const response = await axios.get(
+        const available = await axios.get(
+          "https://vital-lizard-adequately.ngrok-free.app/api/available_taxibe/",
+          { params: { from, to, date } }
+        );
+
+        const taxibeget = await axios.get(
           "https://vital-lizard-adequately.ngrok-free.app/api/taxibeget/"
         );
+
+        const coopMap = {};
+        taxibeget.data.forEach((item) => {
+          coopMap[item.id] = item.cooperative.nom;
+        });
+
+        const merged = available.data.map((item) => ({
+          ...item,
+          taxibe: {
+            ...item.taxibe,
+            cooperative_nom: coopMap[item.taxibe.id] || "N/A",
+          },
+        }));
+
+        setTaxibes(merged);
+
         const uniqueCooperatives = Array.from(
           new Map(
-            response.data.map((item) => [
+            taxibeget.data.map((item) => [
               item.cooperative.id,
               { id: item.cooperative.id, nom: item.cooperative.nom },
             ])
           ).values()
         );
+
         setCooperatives([
           { id: "Toutes", nom: "Toutes les coopératives" },
           ...uniqueCooperatives,
         ]);
-      } catch (error) {
-        console.error("Error fetching cooperatives:", error);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchTaxibes();
-    fetchCooperatives();
+    fetchData();
   }, [from, to, date]);
 
   const filteredTaxibes =
@@ -78,8 +94,12 @@ const AvailableTaxibe = () => {
 
   const formatDate = (dateString) => {
     const d = new Date(dateString);
-    const options = { year: "numeric", month: "long", day: "numeric" };
-    return d.toLocaleDateString("fr-FR", options);
+    return d.toLocaleDateString("fr-FR", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   };
 
   const renderTaxibe = ({ item }) => (
@@ -89,117 +109,130 @@ const AvailableTaxibe = () => {
           pathname: "/selectSeats",
           params: {
             totalPlaces: item.taxibe.nb_place,
-            availablePlaces: item.taxibe.place_dispo,
+            availablePlaces: item.place_dispo,
             marque: item.taxibe.marque,
             trajetId: item.id,
           },
         })
       }
-      className="bg-white rounded-xl shadow-md p-4 mb-4 mx-2 flex-row items-center justify-between"
+      style={{
+        backgroundColor: "rgba(255, 255, 255, 0.9)",
+        borderRadius: 16,
+        marginHorizontal: 16,
+        marginBottom: 16,
+        padding: 16,
+        shadowColor: "#000",
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        flexDirection: "row",
+        alignItems: "center",
+      }}
     >
       <Image
         source={{
           uri: `https://vital-lizard-adequately.ngrok-free.app/${item.taxibe.photo}`,
         }}
-        className="w-20 h-20 rounded-xl"
+        style={{ width: 80, height: 80, borderRadius: 12 }}
         resizeMode="cover"
       />
-      <View className="flex-1 mx-4">
-        <Text className="font-bold text-blue-500 text-lg">
-          {item.taxibe.marque}
+      <View style={{ flex: 1, marginLeft: 16 }}>
+        <Text style={{ fontSize: 16, fontWeight: "bold", color: "#2563EB" }}>
+          <FontAwesome5 name="shuttle-van" size={14} /> {item.taxibe.marque}
         </Text>
-
-        <Text className="text-gray-600 text-sm">
-          <Feather name="home" size={14} color="gray" />{" "}
-          {item.taxibe.cooperative || "N/A"}
+        <Text style={{ color: "#4B5563", fontSize: 13, marginTop: 4 }}>
+          <MaterialIcons name="business" size={14} />{" "}
+          {item.taxibe.cooperative_nom}
         </Text>
-
-        <Text className="text-gray-600 text-sm">
-          <Feather name="hash" size={14} color="gray" /> {item.taxibe.matricule}
+        <Text style={{ color: "#4B5563", fontSize: 13, marginTop: 2 }}>
+          <Feather name="user" size={14} /> Chauffeur : {item.taxibe.chauffeur}
         </Text>
-
-        <Text className="text-gray-600 text-sm">
-          <Feather name="user" size={14} color="gray" /> {item.taxibe.chauffeur}
-        </Text>
-
-        <Text className="text-green-600 text-sm">
-          <Feather name="users" size={14} color="gray" /> {item.place_dispo}/
+        <Text style={{ color: "#10B981", fontSize: 13, marginTop: 2 }}>
+          <Feather name="users" size={14} /> {item.place_dispo}/
           {item.taxibe.nb_place} places
         </Text>
+        <Text style={{ color: "#EF4444", fontSize: 13, marginTop: 2 }}>
+          <Feather name="dollar-sign" size={14} /> {item.price} Ar
+        </Text>
       </View>
-
       <Feather name="chevron-right" size={24} color="gray" />
     </TouchableOpacity>
   );
 
   const renderHeader = () => (
-    <View>
-      {/* Header */}
-      <View className="flex-row justify-between items-center p-4">
-        <TouchableOpacity
-          onPress={() => router.push("/home")}
-          className="bg-gray-200 p-2 rounded-full"
-        >
-          <Feather name="arrow-left" size={24} color="gray" />
+    <View style={{ paddingHorizontal: 20, paddingTop: 20 }}>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Feather name="arrow-left" size={26} color="#000" />
         </TouchableOpacity>
-        <Text className="text-lg font-bold text-green-700">
+        <Text
+          style={{
+            fontSize: 20,
+            fontWeight: "bold",
+            marginLeft: 12,
+            fontStyle:'italic'
+          }}
+        >
           TAXI-BROUSSE DISPONIBLES
         </Text>
-        <View className="w-10" /> {/* Spacer */}
       </View>
 
-      {/* Route Info */}
-      <View className="items-center mb-6">
-        <Text className="text-xl font-semibold text-gray-800">
-          {from} → {to}
-        </Text>
-        <Text className="text-sm text-gray-600">Le {formatDate(date)}</Text>
+      <Text
+        style={{
+          marginTop: 20,
+          fontSize: 16,
+          color: "red",
+          textAlign:"center",
+          fontWeight: "600",
+        }}
+      >
+        {from} → {to}
+      </Text>
+      <Text style={{ textAlign: 'center', marginBottom:10 }}>{formatDate(date)}</Text>
+
+      <View style={{ backgroundColor: "white", borderRadius: 12, marginTop: 16, marginBottom : 16 }}>
+        <Picker
+          selectedValue={selectedCooperative}
+          onValueChange={(value) => setSelectedCooperative(value)}
+        >
+          {cooperatives.map((coop) => (
+            <Picker.Item key={coop.id} label={coop.nom} value={coop.id} />
+          ))}
+        </Picker>
       </View>
 
-      {/* Cooperative Filter */}
-      <View className="px-4 mb-6">
-        <Text className="text-gray-700 mb-2 font-medium">
-          Filtrer par coopérative
-        </Text>
-        <View className="border-2 border-gray-200 rounded-xl bg-white">
-          <Picker
-            selectedValue={selectedCooperative}
-            onValueChange={(itemValue) => setSelectedCooperative(itemValue)}
-            style={{ height: 50 }}
-          >
-            {cooperatives.map((coop) => (
-              <Picker.Item key={coop.id} label={coop.nom} value={coop.id} />
-            ))}
-          </Picker>
+      {loading && (
+        <View style={{ marginTop: 20, alignItems: "center" }}>
+          <ActivityIndicator size="large" color="#22C55E" />
         </View>
-      </View>
+      )}
 
-      {/* Loading or Empty State */}
-      {loading ? (
-        <ActivityIndicator size="large" color="#10B981" className="mb-6" />
-      ) : filteredTaxibes.length === 0 ? (
-        <View className="items-center mb-6">
-          <Feather name="truck" size={48} color="gray" />
-          <Text className="text-lg text-gray-500 mt-4">
-            Aucun TaxiBe disponible
+      {!loading && filteredTaxibes.length === 0 && (
+        <View style={{ marginTop: 20, alignItems: "center" }}>
+          <Entypo name="circle-with-cross" size={48} color="#fff" />
+          <Text style={{ marginTop: 8 }}>
+            Aucun taxi disponible
           </Text>
         </View>
-      ) : null}
+      )}
     </View>
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
-      <FlatList
-        data={filteredTaxibes.length > 0 ? filteredTaxibes : []}
-        renderItem={renderTaxibe}
-        keyExtractor={(item) => item.id.toString()}
-        ListHeaderComponent={renderHeader}
-        ListFooterComponent={<View className="h-20" />}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 8 }}
-      />
-    </SafeAreaView>
+    <ImageBackground
+      source={backgroundImage}
+      resizeMode="cover"
+      style={{ flex: 1 }}
+    >
+      <SafeAreaView style={{ flex: 1 }}>
+        <FlatList
+          data={filteredTaxibes}
+          renderItem={renderTaxibe}
+          keyExtractor={(item) => item.id.toString()}
+          ListHeaderComponent={renderHeader}
+          contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}
+        />
+      </SafeAreaView>
+    </ImageBackground>
   );
 };
 
