@@ -8,6 +8,9 @@ import {
   Alert,
   Modal,
   TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Feather, FontAwesome5 } from "@expo/vector-icons";
@@ -19,17 +22,19 @@ import Animated, {
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-
 import profileImage from "../../assets/robot.jpg";
+import backgroundImage from "../../assets/bghome3.png";
 
 export default function Profile() {
   const router = useRouter();
   const [userData, setUserData] = useState({
     username: "",
     email: "",
+    tel : "",
     created_at: "",
     fullname: "",
     bio: "",
+    adresse: "",
     image: "",
     verified: false,
   });
@@ -39,9 +44,10 @@ export default function Profile() {
   const [formData, setFormData] = useState({
     fullname: "",
     bio: "",
+    adresse: "",
     old_password: "",
     new_password: "",
-    confirmNewPassword:""
+    confirmNewPassword: "",
   });
 
   useEffect(() => {
@@ -49,7 +55,6 @@ export default function Profile() {
       try {
         const token = await AsyncStorage.getItem("accessToken");
         if (token) {
-          console.log("Token trouvé:", token);
           const response = await axios.get(
             "https://vital-lizard-adequately.ngrok-free.app/api/me/",
             {
@@ -58,47 +63,47 @@ export default function Profile() {
               },
             }
           );
-          console.log("Réponse API:", response.data);
-          const { username, email, profile } = response.data;
+          const data = response.data;
           setUserData({
-            username: username || "Utilisateur",
-            email: email || "email@example.com",
-            created_at: profile?.created_at
-              ? new Date(profile.created_at).toLocaleDateString("fr-FR")
+            username: data.user.username || "",
+            email: data.user.email || "",
+            tel: data.user.tel,
+            created_at: data.created_at
+              ? new Date(data.created_at).toLocaleDateString("fr-FR")
               : "Date inconnue",
-            fullname: profile?.fullname || "",
-            bio: profile?.bio || "",
-            image: profile?.image || "",
-            verified: profile?.verified || false,
+            fullname: data.fullname || "",
+            bio: data.bio || "",
+            adresse: data.adresse || "",
+            image: data.image || "",
+            verified: data.verified || false,
           });
           setFormData({
             ...formData,
-            fullname: profile?.fullname || "",
-            bio: profile?.bio || "",
+            fullname: data.fullname || "",
+            bio: data.bio || "",
+            adresse: data.adresse || "",
           });
         } else {
-          console.log("Aucun token trouvé");
           setUserData({
             username: "Non connecté",
             email: "Veuillez vous connecter",
             created_at: "N/A",
             fullname: "",
             bio: "",
+            adresse: "",
             image: "",
             verified: false,
           });
         }
       } catch (error) {
         console.error("Erreur lors de la récupération du profil:", error);
-        if (error.response) {
-          console.error("Détails erreur:", error.response.data);
-        }
         setUserData({
           username: "Erreur",
           email: "Erreur lors du chargement",
           created_at: "N/A",
           fullname: "",
           bio: "",
+          adresse: "",
           image: "",
           verified: false,
         });
@@ -146,14 +151,14 @@ export default function Profile() {
 
   const handleSaveChanges = async () => {
     if (editMode === "profile") {
-      // Update profile logic here
       try {
         const token = await AsyncStorage.getItem("accessToken");
         await axios.put(
-          "https://vital-lizard-adequately.ngrok-free.app/api/user-profile/",
+          "https://vital-lizard-adequately.ngrok-free.app/api/me/",
           {
             fullname: formData.fullname,
             bio: formData.bio,
+            adresse: formData.adresse,
           },
           {
             headers: {
@@ -165,6 +170,7 @@ export default function Profile() {
           ...userData,
           fullname: formData.fullname,
           bio: formData.bio,
+          adresse: formData.adresse,
         });
         Alert.alert("Succès", "Profil mis à jour avec succès.");
         setModalVisible(false);
@@ -197,7 +203,7 @@ export default function Profile() {
           ...formData,
           old_password: "",
           new_password: "",
-          confirmNewPassword:"",
+          confirmNewPassword: "",
         });
       } catch (error) {
         console.error("Erreur lors du changement de mot de passe:", error);
@@ -210,215 +216,515 @@ export default function Profile() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
-      <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
-        {/* Header Section */}
-        <Animated.View
-          entering={FadeInUp.duration(500)}
-          className="pt-12 pb-6 px-4 bg-green-700"
-        >
-          <Text className="text-3xl font-bold text-white">Profil</Text>
-          <Text className="text-sm text-gray-200 mt-1">Gérez votre compte</Text>
-        </Animated.View>
+    <SafeAreaView style={styles.safeArea}>
+      <Image
+        source={backgroundImage}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      />
+      <View style={styles.contentContainer}>
 
-        {/* Profile Card */}
-        <Animated.View
-          entering={FadeInDown.duration(500).delay(200)}
-          className="mx-4 bg-white rounded-xl p-4 mt-6 shadow-md"
-        >
-          <View className="flex-row items-center">
-            <Image
-              source={userData.image ? { uri: userData.image } : profileImage}
-              className="w-20 h-20 rounded-full border-2 border-green-500"
-            />
-            <View className="ml-4 flex-1">
-              <View className="flex-row items-center">
-                <Text className="text-xl font-semibold text-gray-800">
-                  {loading ? "Chargement..." : userData.username.username}
-                </Text>
-                {userData.verified && (
-                  <Feather
-                    name="check-circle"
-                    size={18}
-                    color="#10B981"
-                    style={{ marginLeft: 8 }}
-                  />
-                )}
-              </View>
-              <Text className="text-sm text-gray-600">
-                {loading ? "Chargement..." : userData.username.email}
-              </Text>
-              <Text className="text-xs text-gray-500 mt-1">
-                Inscrit le {loading ? "..." : userData.created_at}
-              </Text>
-              {userData.fullname && (
-                <Text className="text-sm font-medium text-gray-700 mt-1">
-                  {userData.fullname}
-                </Text>
-              )}
-              {userData.bio && (
-                <Text className="text-xs text-gray-500 mt-1">
-                  {userData.bio}
-                </Text>
-              )}
-            </View>
-          </View>
-          <View className="flex-row mt-4">
-            <TouchableOpacity
-              className="bg-green-500 py-2 px-4 rounded-lg self-start mr-2"
-              activeOpacity={0.8}
-              onPress={handleEditProfile}
-            >
-              <Text className="text-white font-medium">Modifier le Profil</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="bg-blue-500 py-2 px-4 rounded-lg self-start"
-              activeOpacity={0.8}
-              onPress={handleEditPassword}
-            >
-              <Text className="text-white font-medium">
-                Changer Mot de Passe
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-
-        {/* Menu Options */}
-        <Animated.View
-          entering={FadeInDown.duration(500).delay(600)}
-          className="mx-4"
-        >
-          <TouchableOpacity
-            className="flex-row items-center bg-white p-4 rounded-xl mb-3 shadow-sm"
-            onPress={() => router.push("/my-tickets")}
-            activeOpacity={0.7}
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {/* Header Section */}
+          <Animated.View
+            entering={FadeInUp.duration(500)}
+            style={styles.headerContainer}
           >
-            <FontAwesome5 name="ticket" size={24} color="#10B981" />
-            <Text className="ml-4 text-gray-800 font-medium">
-              Mes Réservations
+            <Text style={styles.headerTitle}>Mon Profil</Text>
+            <Text style={styles.headerSubtitle}>
+              Gérez vos informations personnelles
             </Text>
-          </TouchableOpacity>
+          </Animated.View>
 
-          <TouchableOpacity
-            className="flex-row items-center bg-white p-4 rounded-xl mb-3 shadow-sm"
-            onPress={handleLogout}
-            activeOpacity={0.7}
+          {/* Profile Card */}
+          <Animated.View
+            entering={FadeInDown.duration(500).delay(200)}
+            style={styles.profileCard}
           >
-            <Feather name="log-out" size={24} color="#10B981" />
-            <Text className="ml-4 text-gray-800 font-medium">Déconnexion</Text>
-          </TouchableOpacity>
-        </Animated.View>
-
-        {/* Edit Modal */}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-            <Animated.View
-              entering={BounceIn.duration(300)}
-              className="bg-white rounded-xl p-6 w-11/12 max-h-[50%]"
-            >
-              <Text className="text-2xl font-bold text-gray-800 mb-4">
-                {editMode === "profile"
-                  ? "Modifier le Profil"
-                  : "Changer le Mot de Passe"}
-              </Text>
-
-              {editMode === "profile" ? (
-                <View className="space-y-4">
-                  <View>
-                    <Text className="text-gray-700 font-medium mb-1">
-                      Nom complet
-                    </Text>
-                    <TextInput
-                      className="bg-gray-100 p-3 rounded-lg text-gray-800"
-                      value={formData.fullname}
-                      onChangeText={(text) =>
-                        setFormData({ ...formData, fullname: text })
-                      }
-                      placeholder="Entrez votre nom complet"
+            <View style={styles.profileInfo}>
+              <Image
+                source={userData.image ? { uri: userData.image } : profileImage}
+                style={styles.profileImage}
+              />
+              <View style={styles.profileDetails}>
+                <View style={styles.profileNameContainer}>
+                <Text style={styles.profileEmail}>
+                  {loading ? "Chargement..." : userData.email}
+                </Text>
+                  {userData.verified && (
+                    <Feather
+                      name="check-circle"
+                      size={20}
+                      color="#388E3C"
+                      style={styles.verifiedIcon}
                     />
-                  </View>
-                  <View>
-                    <Text className="text-gray-700 font-medium mb-1">Bio</Text>
-                    <TextInput
-                      className="bg-gray-100 p-3 rounded-lg text-gray-800 h-24"
-                      value={formData.bio}
-                      onChangeText={(text) =>
-                        setFormData({ ...formData, bio: text })
-                      }
-                      placeholder="Parlez de vous..."
-                      multiline
-                    />
-                  </View>
+                  )}
                 </View>
-              ) : (
-                <View className="space-y-4">
-                  <View>
-                    <Text className="text-gray-700 font-medium mb-1">
-                      Ancien mot de passe
-                    </Text>
-                    <TextInput
-                      className="bg-gray-100 p-3 rounded-lg text-gray-800"
-                      secureTextEntry
-                      value={formData.old_password}
-                      onChangeText={(text) =>
-                        setFormData({ ...formData, old_password: text })
-                      }
-                    />
-                  </View>
-
-                  <View>
-                    <Text className="text-gray-700 font-medium mb-1">
-                      Nouveau mot de passe
-                    </Text>
-                    <TextInput
-                      className="bg-gray-100 p-3 rounded-lg text-gray-800"
-                      secureTextEntry
-                      value={formData.new_password}
-                      onChangeText={(text) =>
-                        setFormData({ ...formData, new_password: text })
-                      }
-                    />
-                  </View>
-
-                  <View>
-                    <Text className="text-gray-700 font-medium mb-1">
-                      Confirmer le nouveau mot de passe
-                    </Text>
-                    <TextInput
-                      className="bg-gray-100 p-3 rounded-lg text-gray-800"
-                      secureTextEntry
-                      value={formData.confirmNewPassword}
-                      onChangeText={(text) =>
-                        setFormData({ ...formData, confirmNewPassword: text })
-                      }
-                    />
-                  </View>
-                </View>
-              )}
-
-              <View className="flex-row justify-end mt-6 space-x-3">
-                <TouchableOpacity
-                  className="bg-gray-300 py-2 px-4 rounded-lg"
-                  onPress={() => setModalVisible(false)}
-                >
-                  <Text className="text-gray-800 font-medium">Annuler</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  className="bg-green-500 py-2 px-4 ml-4 rounded-lg"
-                  onPress={handleSaveChanges}
-                >
-                  <Text className="text-white font-medium">Enregistrer</Text>
-                </TouchableOpacity>
+                {/* <Text style={styles.profileName}>
+                    {loading ? "Chargement..." : userData.username}
+                  </Text> */}
+                <Text style={styles.profileTel}>
+                  {loading ? "Chargement..." : userData.tel}
+                </Text>
+                <Text style={styles.profileJoined}>
+                  Inscrit le {loading ? "..." : 
+                    userData.created_at ? 
+                      (() => {
+                        const [day, month, year] = userData.created_at.split("/");
+                        const date = new Date(`20${year}-${month}-${day}`);
+                        return date.toLocaleDateString("fr-FR", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        });
+                      })() 
+                      : "Date inconnue"
+                    }
+                </Text>
+                {/* {userData.fullname && (
+                  <Text style={styles.profileFullname}>
+                    {userData.fullname}
+                  </Text>
+                )}
+                {userData.bio && (
+                  <Text style={styles.profileBio}>{userData.bio}</Text>
+                )}
+                {userData.adresse && (
+                  <Text style={styles.profileAdresse}>
+                    Adresse: {userData.adresse}
+                  </Text>
+                )} */}
               </View>
-            </Animated.View>
-          </View>
-        </Modal>
-      </ScrollView>
+            </View>
+            <View style={styles.profileActions}>
+             
+              <TouchableOpacity
+                style={styles.actionButtonEdit}
+                activeOpacity={0.7}
+                onPress={handleEditProfile}
+              >
+                <Text style={styles.actionButtonText}>Modifier Profil</Text>
+              </TouchableOpacity>
+             
+              <TouchableOpacity
+                style={styles.actionButtonPassword}
+                activeOpacity={0.7}
+                onPress={handleEditPassword}
+              >
+                <Text style={styles.actionButtonText}>
+                  Changer Mot de Passe
+                </Text>
+              </TouchableOpacity>
+
+            </View>
+          </Animated.View>
+
+          {/* Menu Options */}
+          <Animated.View
+            entering={FadeInDown.duration(500).delay(400)}
+            style={styles.menuContainer}
+          >
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => router.push("/my-tickets")}
+              activeOpacity={0.7}
+            >
+              <FontAwesome5 name="ticket-alt" size={24} color="#388E3C" />
+              <Text style={styles.menuItemText}>Mes Réservations</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={handleLogout}
+              activeOpacity={0.7}
+            >
+              <Feather name="log-out" size={24} color="#D32F2F" />
+              <Text style={styles.menuItemText}>Déconnexion</Text>
+            </TouchableOpacity>
+          </Animated.View>
+
+          {/* Edit Modal */}
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => setModalVisible(false)}
+          >
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : "height"}
+              style={styles.modalContainer}
+            >
+              <View style={styles.modalBackdrop}>
+                <Animated.View
+                  entering={BounceIn.duration(300)}
+                  style={styles.modalContent}
+                >
+                  <Text style={styles.modalTitle}>
+                    {editMode === "profile"
+                      ? "Modifier le Profil"
+                      : "Changer le Mot de Passe"}
+                  </Text>
+                  <ScrollView contentContainerStyle={styles.modalScrollContent}>
+                    {editMode === "profile" ? (
+                      <View style={styles.formContainer}>
+                        <View style={styles.formField}>
+                          <Text style={styles.formLabel}>Nom complet</Text>
+                          <TextInput
+                            style={styles.formInput}
+                            value={formData.fullname}
+                            onChangeText={(text) =>
+                              setFormData({ ...formData, fullname: text })
+                            }
+                            placeholder="Entrez votre nom complet"
+                            placeholderTextColor="#9CA3AF"
+                          />
+                        </View>
+                        <View style={styles.formField}>
+                          <Text style={styles.formLabel}>Bio</Text>
+                          <TextInput
+                            style={[styles.formInput, styles.formInputMultiline]}
+                            value={formData.bio}
+                            onChangeText={(text) =>
+                              setFormData({ ...formData, bio: text })
+                            }
+                            placeholder="Parlez de vous..."
+                            placeholderTextColor="#9CA3AF"
+                            multiline
+                          />
+                        </View>
+                        <View style={styles.formField}>
+                          <Text style={styles.formLabel}>Adresse</Text>
+                          <TextInput
+                            style={styles.formInput}
+                            value={formData.adresse}
+                            onChangeText={(text) =>
+                              setFormData({ ...formData, adresse: text })
+                            }
+                            placeholder="Entrez votre adresse"
+                            placeholderTextColor="#9CA3AF"
+                          />
+                        </View>
+                      </View>
+                    ) : (
+                      <View style={styles.formContainer}>
+                        <View style={styles.formField}>
+                          <Text style={styles.formLabel}>
+                            Ancien mot de passe
+                          </Text>
+                          <TextInput
+                            style={styles.formInput}
+                            secureTextEntry
+                            value={formData.old_password}
+                            onChangeText={(text) =>
+                              setFormData({ ...formData, old_password: text })
+                            }
+                            placeholder="Entrez l'ancien mot de passe"
+                            placeholderTextColor="#9CA3AF"
+                          />
+                        </View>
+                        <View style={styles.formField}>
+                          <Text style={styles.formLabel}>
+                            Nouveau mot de passe
+                          </Text>
+                          <TextInput
+                            style={styles.formInput}
+                            secureTextEntry
+                            value={formData.new_password}
+                            onChangeText={(text) =>
+                              setFormData({ ...formData, new_password: text })
+                            }
+                            placeholder="Entrez le nouveau mot de passe"
+                            placeholderTextColor="#9CA3AF"
+                          />
+                        </View>
+                        <View style={styles.formField}>
+                          <Text style={styles.formLabel}>
+                            Confirmer le nouveau mot de passe
+                          </Text>
+                          <TextInput
+                            style={styles.formInput}
+                            secureTextEntry
+                            value={formData.confirmNewPassword}
+                            onChangeText={(text) =>
+                              setFormData({
+                                ...formData,
+                                confirmNewPassword: text,
+                              })
+                            }
+                            placeholder="Confirmez le nouveau mot de passe"
+                            placeholderTextColor="#9CA3AF"
+                          />
+                        </View>
+                      </View>
+                    )}
+                  </ScrollView>
+                  <View style={styles.modalActions}>
+                    <TouchableOpacity
+                      style={styles.modalButtonCancel}
+                      onPress={() => setModalVisible(false)}
+                    >
+                      <Text style={styles.modalButtonText}>Annuler</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.modalButtonSave}
+                      onPress={handleSaveChanges}
+                    >
+                      <Text style={styles.modalButtonText}>Enregistrer</Text>
+                    </TouchableOpacity>
+                  </View>
+                </Animated.View>
+              </View>
+            </KeyboardAvoidingView>
+          </Modal>
+
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    marginTop:10,
+    position : "relative"
+  },
+  backgroundImage: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    resizeMode:"cover"
+  },
+  contentContainer: {
+    flex: 1,
+    position: "relative",
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 0
+  },
+  scrollWrapper: {
+    flex: 1,
+    position: 'relative',
+    zIndex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 40,
+  },
+  headerContainer: {
+    paddingTop: 20,
+    paddingBottom: 24,
+    paddingHorizontal: 16,
+    backgroundColor: '#D32F2F',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  headerTitle: {
+    fontSize: 32,
+    textAlign:'center',
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    textAlign:'center',
+    color: '#FFFFFF',
+    opacity: 0.9,
+    marginTop: 4,
+  },
+  profileCard: {
+    marginHorizontal: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 20,
+    paddingRight: 10,
+    paddingBottom:16,
+    paddingTop:16,
+    paddingLeft:10,
+    marginTop: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  profileInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  profileImage: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    borderWidth: 4,
+    borderColor: '#388E3C', 
+  },
+  profileDetails: {
+    marginLeft: 16,
+    flex: 1,
+  },
+  profileNameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  profileName: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  verifiedIcon: {
+    marginLeft: 8,
+  },
+  profileEmail: {
+    fontSize: 20,
+    color: '#4B5563',
+    marginTop: 4,
+    color: '#D32F2F',
+  },
+  profileTel: {
+    fontSize: 18,
+    color: '#4B5563',
+    marginTop: 4,
+  },
+  profileJoined: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 4,
+  },
+  profileFullname: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginTop: 8,
+  },
+  profileBio: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginTop: 4,
+  },
+  profileAdresse: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginTop: 4,
+  },
+  profileActions: {
+    flexDirection: 'row',
+    marginTop: 24,
+    gap: 12,
+  },
+  actionButtonEdit: {
+    flex: 1,
+    backgroundColor: '#388E3C',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  actionButtonPassword: {
+    flex: 1,
+    backgroundColor: '#D32F2F',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  menuContainer: {
+    marginHorizontal: 16,
+    marginTop: 24,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    padding: 16,
+    borderRadius: 20,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  menuItemText: {
+    marginLeft: 16,
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#1F2937',
+  },
+  modalContainer: {
+    flex: 1,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    width: '90%',
+    maxHeight: '80%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#D32F2F',
+    marginBottom: 16,
+  },
+  modalScrollContent: {
+    paddingBottom: 16,
+  },
+  formContainer: {
+    gap: 16,
+  },
+  formField: {
+    gap: 8,
+  },
+  formLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  formInput: {
+    backgroundColor: '#F3F4F6',
+    padding: 12,
+    borderRadius: 12,
+    fontSize: 16,
+    color: '#1F2937',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+  },
+  formInputMultiline: {
+    height: 96,
+    textAlignVertical: 'top',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 24,
+    gap: 12,
+  },
+  modalButtonCancel: {
+    backgroundColor: 'gray',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+  },
+  modalButtonSave: {
+    backgroundColor: '#388E3C',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+  },
+  modalButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
