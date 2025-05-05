@@ -271,7 +271,7 @@ export default function Profile() {
                     userData.created_at ? 
                       (() => {
                         const [day, month, year] = userData.created_at.split("/");
-                        const date = new Date(`20${year}-${month}-${day}`);
+                        const date = new Date(`${year}-${month}-${day}`);
                         return date.toLocaleDateString("fr-FR", {
                           day: "numeric",
                           month: "long",
