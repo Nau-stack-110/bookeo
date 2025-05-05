@@ -6,6 +6,7 @@ import {
   Image,
   Alert,
   ActivityIndicator,
+  ImageBackground
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Picker } from "@react-native-picker/picker";
@@ -14,6 +15,8 @@ import { Feather } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import logo from "../../assets/taxibelogo.png";
+import bgImage from '../../assets/bghome3.png';
+
 
 const VILLE_CHOICES = [
   "Antsirabe", "Ambatolampy", "Antananarivo", "Toamasina", "Mahajanga", "Antsiranana",
@@ -56,7 +59,11 @@ const Home = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white px-4">
+    <ImageBackground
+    source = {bgImage}
+    style = {{flex: 1}}
+    resizeMode="cover"> 
+    <SafeAreaView className="flex-1 px-4">
       <View className="items-center py-6">
         <Image source={logo} resizeMode="contain" className="w-32 h-32 mb-2" />
         <Text className="text-xl font-semibold text-green-700">
@@ -148,11 +155,12 @@ const Home = () => {
       </View>
 
       <View className="items-center mt-6">
-        <Text className="text-gray-500 text-sm italic">
+        <Text className="text-gray-900 text-sm italic">
           © 2025 Taxi-Brousse – Coopératives – Madagascar 🇲🇬
         </Text>
       </View>
     </SafeAreaView>
+    </ImageBackground>
   );
 };
 

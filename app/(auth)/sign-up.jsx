@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, ImageBackground } from 'react-native'
 import { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { FontAwesome } from '@expo/vector-icons'
@@ -6,6 +6,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-na
 import { Link, useRouter } from 'expo-router'
 import axios from 'axios'
 import FormField from '../../components/formField'
+import bgImage from '../../assets/bghome3.png'
 
 const Signup = () => {
   const router = useRouter()
@@ -115,17 +116,21 @@ const Signup = () => {
   }
 
   return (
-    <SafeAreaView style={{ backgroundColor: '#FFFFFF', flex: 1 }}>
+    <ImageBackground
+    source = {bgImage}
+    style = {{flex: 1}}
+    resizeMode="cover"> 
+    <SafeAreaView style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View style={{
           flex: 1,
           justifyContent: 'center',
           paddingHorizontal: 20,
           paddingVertical: 40,
-          backgroundColor: '#FFFFFF'
+          // backgroundColor: '#FFFFFF'
         }}>
           {/* Logo and Title */}
-          <View style={{ alignItems: 'center', marginBottom: 20 }}>
+          <View style={{ alignItems: 'center', marginBottom: 10 }}>
             <Text style={{
               fontSize: 48,
               fontWeight: 'bold',
@@ -138,14 +143,37 @@ const Signup = () => {
               TaxiBe <FontAwesome name="taxi" size={40} color="#008000" />
             </Text>
             <Text style={{
-              fontSize: 24,
+              fontSize: 30,
               fontWeight: '600',
               color: '#333',
               marginTop: 10,
-              fontFamily: 'Roboto'
+              fontStyle:'italic',
+              // fontFamily: 'Roboto'
             }}>
               Create Your Account
             </Text>
+          </View>
+           {/* Sign In Link */}
+           <View style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            marginBottom: 30
+          }}>
+            <Text style={{
+              fontSize: 16,
+              color: '#333',
+              fontFamily: 'Roboto'
+            }}>
+              Already have an account?{' '}
+            </Text>
+            <Link href="/sign-in" style={{
+              fontSize: 16,
+              color: '#FF0000',
+              fontWeight: 'bold',
+              fontFamily: 'Roboto'
+            }}>
+              Sign In
+            </Link>
           </View>
 
           {/* Error Message */}
@@ -246,32 +274,10 @@ const Signup = () => {
               )}
             </TouchableOpacity>
           </Animated.View>
-
-          {/* Sign In Link */}
-          <View style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            marginTop: 30
-          }}>
-            <Text style={{
-              fontSize: 16,
-              color: '#333',
-              fontFamily: 'Roboto'
-            }}>
-              Already have an account?{' '}
-            </Text>
-            <Link href="/sign-in" style={{
-              fontSize: 16,
-              color: '#FF0000',
-              fontWeight: 'bold',
-              fontFamily: 'Roboto'
-            }}>
-              Sign In
-            </Link>
-          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
+  </ImageBackground>
   )
 }
 

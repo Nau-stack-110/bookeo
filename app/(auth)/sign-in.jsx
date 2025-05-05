@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, ImageBackground } from 'react-native'
 import { useState, useEffect } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { FontAwesome } from '@expo/vector-icons'
@@ -6,6 +6,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-na
 import { Link, useRouter } from 'expo-router'
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import bgImage from '../../assets/bghome3.png';
 
 const Signin = () => {
   const router = useRouter()
@@ -89,14 +90,19 @@ const Signin = () => {
   }
 
   return (
-    <SafeAreaView style={{ backgroundColor: '#FFFFFF', flex: 1 }}>
+    <ImageBackground
+    source = {bgImage}
+    style = {{flex: 1}}
+    resizeMode="cover"> 
+    <SafeAreaView style={{ flex: 1 }}>
+
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View style={{
           flex: 1,
           justifyContent: 'center',
           paddingHorizontal: 20,
           paddingVertical: 40,
-          backgroundColor: '#FFFFFF'
+          // backgroundColor: '#FFFFFF'
         }}>
           {/* Logo and Title */}
           <View style={{ alignItems: 'center', marginBottom: 20 }}>
@@ -112,11 +118,12 @@ const Signin = () => {
               TaxiBe <FontAwesome name="taxi" size={40} color="#008000" />
             </Text>
             <Text style={{
-              fontSize: 24,
+              fontSize: 30,
               fontWeight: '600',
               color: '#333',
               marginTop: 10,
-              fontFamily: 'Roboto'
+              fontStyle:'italic',
+              // fontFamily: 'Roboto'
             }}>
               Log in to Your Account
             </Text>
@@ -269,6 +276,7 @@ const Signin = () => {
         </View>
       </ScrollView>
     </SafeAreaView>
+  </ImageBackground>
   )
 }
 
