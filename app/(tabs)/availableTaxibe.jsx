@@ -161,7 +161,7 @@ const AvailableTaxibe = () => {
   const renderHeader = () => (
     <View style={{ paddingHorizontal: 20, paddingTop: 20 }}>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => router.push("/home")}>
           <Feather name="arrow-left" size={26} color="#000" />
         </TouchableOpacity>
         <Text
