@@ -30,7 +30,7 @@ const Signin = () => {
       try {
         const token = await AsyncStorage.getItem('accessToken')
         if (token) {
-          router.replace('/home')
+          router.replace('/(tabs)/home')
         }
       } catch (err) {
         console.error('Error checking auth:', err)
@@ -71,7 +71,8 @@ const Signin = () => {
       const { access, refresh } = response.data
       await AsyncStorage.setItem('accessToken', access)
       await AsyncStorage.setItem('refreshToken', refresh)
-      router.push('/home')
+      // router.push('/home')
+      router.replace('/(tabs)/home')
     } catch (err) {
       console.error('Error:', err.response?.data || err.message)
       setError('Invalid username or password. Please try again.')

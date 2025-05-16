@@ -15,12 +15,15 @@ const RootLayout = () => {
         const token = await AsyncStorage.getItem('accessToken')
         if (token) {
           setIsAuthenticated(true)
+          // router.replace('/home')
         } else {
           setIsAuthenticated(false)
+          // router.replace('/sign-in')
         }
       } catch (error) {
         console.error('Error checking authentication:', error)
         setIsAuthenticated(false)
+        // router.replace('sign-in')
       } finally {
         setLoading(false)
       }
@@ -40,11 +43,12 @@ const RootLayout = () => {
     <Stack>
       <Stack.Screen name='index' options={ {headerShown:false}}/>
       <Stack.Screen name='(auth)' options={ {headerShown:false}}/>
-      {isAuthenticated ? (
+      <Stack.Screen name='(tabs)' options={ {headerShown:false}}/>
+      {/* {isAuthenticated ? (
         <Stack.Screen name='(tabs)' options={ {headerShown:false}}/>
       ) : (
         <Stack.Screen name='/sign-in' options={ {headerShown:false}}/>
-      )}
+      )} */}
     </Stack> 
   )
 }
