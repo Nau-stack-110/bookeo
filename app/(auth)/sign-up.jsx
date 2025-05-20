@@ -140,7 +140,7 @@ const Signup = () => {
               textShadowOffset: { width: 2, height: 2 },
               textShadowRadius: 4
             }}>
-              TaxiBe <FontAwesome name="taxi" size={40} color="#008000" />
+              TaxiBe 
             </Text>
             <Text style={{
               fontSize: 30,
@@ -150,7 +150,7 @@ const Signup = () => {
               fontStyle:'italic',
               // fontFamily: 'Roboto'
             }}>
-              Create Your Account
+              Créer votre compte
             </Text>
           </View>
            {/* Sign In Link */}
@@ -164,7 +164,7 @@ const Signup = () => {
               color: '#333',
               fontFamily: 'Roboto'
             }}>
-              Already have an account?{' '}
+              Vous avez déjà un compte?{' '}
             </Text>
             <Link href="/sign-in" style={{
               fontSize: 16,
@@ -172,7 +172,7 @@ const Signup = () => {
               fontWeight: 'bold',
               fontFamily: 'Roboto'
             }}>
-              Sign In
+              Se connecter
             </Link>
           </View>
 
@@ -194,7 +194,7 @@ const Signup = () => {
           <FormField
             title="Username"
             value={form.username}
-            placeholder="Enter your username"
+            placeholder="Entrer votre pseudo"
             handleChangeText={(text) => setForm({ ...form, username: text })}
             error={formErrors.username}
             iconName="user"
@@ -202,7 +202,7 @@ const Signup = () => {
           <FormField
             title="Email"
             value={form.email}
-            placeholder="Enter your email address"
+            placeholder="Entrer votre email"
             handleChangeText={(text) => setForm({ ...form, email: text })}
             keyboardType="email-address"
             error={formErrors.email}
@@ -211,7 +211,7 @@ const Signup = () => {
           <FormField
             title="Phone Number"
             value={form.tel}
-            placeholder="Enter your phone number (e.g., +261...)"
+            placeholder="Entrer votre téléphone (e.g., +261...)"
             handleChangeText={(text) => setForm({ ...form, tel: text })}
             keyboardType="phone-pad"
             error={formErrors.tel}
@@ -220,7 +220,7 @@ const Signup = () => {
           <FormField
             title="Password"
             value={form.password}
-            placeholder="Enter your password"
+            placeholder="Entrer votre mot de passe"
             handleChangeText={(text) => setForm({ ...form, password: text })}
             secureTextEntry
             error={formErrors.password}
@@ -229,7 +229,7 @@ const Signup = () => {
           <FormField
             title="Confirm Password"
             value={form.password2}
-            placeholder="Confirm your password"
+            placeholder="Confirmer votre mot de passe"
             handleChangeText={(text) => setForm({ ...form, password2: text })}
             secureTextEntry
             error={formErrors.password2}
@@ -268,7 +268,7 @@ const Signup = () => {
                     fontWeight: 'bold',
                     fontFamily: 'Roboto'
                   }}>
-                    Sign Up
+                    S'inscrire
                   </Text>
                 </>
               )}

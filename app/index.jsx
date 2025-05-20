@@ -18,7 +18,7 @@ export default function App() {
         <View className="w-full justify-center items-center min-h-[100vh] px-4">
           <Text className="text-[40px] text-[#d32f2f] font-extrabold italic mt-5">
             TaxiBe {' '}
-            <FontAwesome name="taxi" size={36} color="#008000" />
+            {/* <FontAwesome name="taxi" size={36} color="#008000" /> */}
           </Text>
 
           <Text className="text-lg text-gray-700 text-center mt-2 font-medium px-2">

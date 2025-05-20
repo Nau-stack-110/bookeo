@@ -116,7 +116,7 @@ const Signin = () => {
               textShadowOffset: { width: 2, height: 2 },
               textShadowRadius: 4
             }}>
-              TaxiBe <FontAwesome name="taxi" size={40} color="#008000" />
+              TaxiBe 
             </Text>
             <Text style={{
               fontSize: 30,
@@ -126,7 +126,7 @@ const Signin = () => {
               fontStyle:'italic',
               // fontFamily: 'Roboto'
             }}>
-              Log in to Your Account
+              Connectez-vous
             </Text>
           </View>
 
@@ -165,7 +165,7 @@ const Signin = () => {
                   color: '#333',
                   fontFamily: 'Roboto'
                 }}
-                placeholder="Username or Phone Number"
+                placeholder="Email ou téléphone"
                 placeholderTextColor="#999"
                 value={form.username}
                 onChangeText={(text) => setForm({ ...form, username: text })}
@@ -199,7 +199,7 @@ const Signin = () => {
                   color: '#333',
                   fontFamily: 'Roboto'
                 }}
-                placeholder="Your Password"
+                placeholder="Votre mot de passe"
                 placeholderTextColor="#999"
                 value={form.password}
                 onChangeText={(text) => setForm({ ...form, password: text })}
@@ -245,7 +245,7 @@ const Signin = () => {
                     fontWeight: 'bold',
                     fontFamily: 'Roboto'
                   }}>
-                    Sign In
+                    Se connecter
                   </Text>
                 </>
               )}
@@ -263,7 +263,7 @@ const Signin = () => {
               color: '#333',
               fontFamily: 'Roboto'
             }}>
-              Don't have an account?{' '}
+              Vous n'avez pas de compte?{' '}
             </Text>
             <Link href="/sign-up" style={{
               fontSize: 16,
@@ -271,7 +271,7 @@ const Signin = () => {
               fontWeight: 'bold',
               fontFamily: 'Roboto'
             }}>
-              Sign Up
+              S'inscrire
             </Link>
           </View>
         </View>
