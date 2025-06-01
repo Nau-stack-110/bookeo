@@ -7,7 +7,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: '#4CAF50',
-        tabBarInactiveTintColor: '#aaa',
+        tabBarInactiveTintColor: '#000',
         headerStyle: {
           backgroundColor: '#1c1c1e',
         },
@@ -15,7 +15,7 @@ export default function TabsLayout() {
         headerTintColor: '#fff',
         tabBarStyle: {
           // backgroundColor: '#1c1c1e',
-          backgroundColor: "#fff",
+          backgroundColor: "#f1f1f1",
           borderTopWidth: 0,
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
@@ -69,7 +69,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="cooperative"
         options={{
-          title: 'Cooperative',
+          title: 'Cooperatives',
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'business' : 'business-outline'} color={color} size={23} />

@@ -49,32 +49,32 @@ const Signup = () => {
     }
 
     if (!form.username.trim()) {
-      errors.username = 'Username is required'
+      errors.username = 'Nom d\'utilisateur obligatoire'
       valid = false
     }
     if (!form.email.trim()) {
-      errors.email = 'Email is required'
+      errors.email = 'Adresse email obligatoire'
       valid = false
     } else if (!/\S+@\S+\.\S+/.test(form.email)) {
-      errors.email = 'Invalid email address'
+      errors.email = 'Adresse email invalide'
       valid = false
     }
     if (!form.tel.trim()) {
-      errors.tel = 'Phone number is required'
+      errors.tel = 'Numéro de telephone obligatoire'
       valid = false
     } else if (!validatePhone(form.tel)) {
-      errors.tel = 'Invalid phone number'
+      errors.tel = 'Numéro invalide'
       valid = false
     }
     if (!form.password) {
-      errors.password = 'Password is required'
+      errors.password = 'Mot de passe obligatiore'
       valid = false
     }
     if (!form.password2) {
-      errors.password2 = 'Confirm password is required'
+      errors.password2 = 'Confirmation mot de passe obligatoire'
       valid = false
     } else if (form.password !== form.password2) {
-      errors.password2 = 'Passwords do not match'
+      errors.password2 = 'Le mot de passe n\'est pas identiques'
       valid = false
     }
 

@@ -15,14 +15,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const SelectSeats = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { totalPlaces, availablePlaces, marque, trajetId, from, to, date } = params;
+  const { totalPlaces, availablePlaces, marque, trajetId, price, categorie, from, to, date } = params;
 
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [showAlert, setShowAlert] = useState(false);
   const [reservedSeats, setReservedSeats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const maxSeats = 4;
+  const maxSeats = 15;
 
   useEffect(() => {
     const fetchTrajetDetails = async () => {
@@ -141,7 +141,7 @@ const SelectSeats = () => {
         pathname: "/payment",
         params: {
           seats: selectedSeats.join(', '),
-          totalAmount: selectedSeats.length * 10000 
+          totalAmount: selectedSeats.length * price 
         }
       });
     } catch (error) {
@@ -204,16 +204,19 @@ const SelectSeats = () => {
       {/* Header */}
       <View className="flex-row justify-between items-center p-4">
         <TouchableOpacity
-          onPress={() => router.push({
-            pathname: "/availableTaxibe",
-            params: { from, to, date }
-          })}
+          onPress={() => {
+            const formattedDate = new Date(date).toISOString().split('T')[0];
+            router.push({
+              pathname: "/availableTaxibe",
+              params: { from, to, date: formattedDate },
+            });
+          }}
           className="bg-gray-200 p-2 rounded-full"
         >
           <Feather name="arrow-left" size={24} color="gray" />
         </TouchableOpacity>
-        <Text className="text-lg font-bold text-green-700">
-          {marque} - {totalPlaces} places
+        <Text className="text-lg font-bold">
+          {marque} - {totalPlaces} places - {categorie} 
         </Text>
         <View className="w-10" />
       </View>
@@ -255,14 +258,14 @@ const SelectSeats = () => {
                       className="flex-row justify-between bg-gray-50 p-2 rounded mb-2"
                     >
                       <Text className="text-gray-700">Siège {seat}</Text>
-                      <Text className="font-semibold text-gray-800">10000 Ar</Text>
+                      <Text className="font-semibold text-gray-800">{price} Ar</Text>
                     </View>
                   ))}
                   <View className="border-t border-gray-200 pt-2">
                     <View className="flex-row justify-between">
                       <Text className="font-bold text-gray-800">Total :</Text>
                       <Text className="font-bold text-gray-800">
-                        {selectedSeats.length * 10000} Ar
+                        {selectedSeats.length * price} Ar
                       </Text>
                     </View>
                   </View>
@@ -283,7 +286,7 @@ const SelectSeats = () => {
               }`}
             >
               <Text className="text-white text-center font-bold text-lg">
-                {isSubmitting ? "Réservation en cours..." : "Réserver"}
+                {isSubmitting ? "Réservation en cours..." : "Réserver sièges"}
               </Text>
             </TouchableOpacity>
           </>

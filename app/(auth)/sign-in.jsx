@@ -45,11 +45,11 @@ const Signin = () => {
     const errors = { username: '', password: '' }
 
     if (!form.username.trim()) {
-      errors.username = 'Username or phone number is required'
+      errors.username = 'Email ou téléphone est obligatiore'
       valid = false
     }
     if (!form.password) {
-      errors.password = 'Password is required'
+      errors.password = 'Le mot de passe est obligatoire'
       valid = false
     }
 
