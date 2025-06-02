@@ -22,7 +22,7 @@ import Animated, {
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import * as ImagePicker from "react-native-image-picker";
+import * as ImagePicker from "expo-image-picker";
 import profileImage from "../../assets/robot.jpg";
 import backgroundImage from "../../assets/bghome3.png";
 
@@ -127,26 +127,44 @@ export default function Profile() {
     fetchUserProfile();
   }, []);
 
-  const handleImageChange = () => {
-    ImagePicker.launchImageLibrary(
-      {
-        mediaType: "photo",
-        quality: 1,
-        includeBase64: false,
-      },
-      (response) => {
-        if (response.didCancel) {
-          console.log("User cancelled image picker");
-        } else if (response.errorCode) {
-          console.error("ImagePicker Error: ", response.errorMessage);
-          Alert.alert("Erreur", "Erreur lors de la sélection de l'image.");
-        } else if (response.assets && response.assets.length > 0) {
-          const selectedImage = response.assets[0];
-          setFormData({ ...formData, image: selectedImage });
-          setImagePreview(selectedImage.uri);
-        }
+  const handleImageChange = async () => {
+    try {
+      // Demander la permission d'accéder à la bibliothèque de photos
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission refusée",
+          "Vous devez autoriser l'accès à la bibliothèque de photos pour sélectionner une image."
+        );
+        return;
       }
-    );
+
+      // Lancer le sélecteur d'image
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+        allowsEditing: true,
+        aspect: [1, 1], // Pour un ratio carré
+      });
+
+      if (result.canceled) {
+        console.log("User cancelled image picker");
+      } else if (result.assets && result.assets.length > 0) {
+        const selectedImage = result.assets[0];
+        setFormData({
+          ...formData,
+          image: {
+            uri: selectedImage.uri,
+            type: selectedImage.mimeType || "image/jpeg",
+            name: `profile_image_${Date.now()}.jpg`,
+          },
+        });
+        setImagePreview(selectedImage.uri);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la sélection de l'image:", error);
+      Alert.alert("Erreur", "Erreur lors de la sélection de l'image.");
+    }
   };
 
   const handleLogout = () => {
@@ -195,7 +213,7 @@ export default function Profile() {
           data.append("image", {
             uri: formData.image.uri,
             type: formData.image.type || "image/jpeg",
-            name: formData.image.fileName || `profile_image_${Date.now()}.jpg`,
+            name: formData.image.name || `profile_image_${Date.now()}.jpg`,
           });
         }
 
