@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   ScrollView,
   ImageBackground,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -31,6 +32,9 @@ import Animated, {
 } from "react-native-reanimated";
 import bgImage from '../../assets/bghome3.png';
 
+import mvolaImage from '../../assets/mvola.jpg';
+import orangeImage from '../../assets/orange.jpg';
+import airtelImage from '../../assets/airtel.png';
 
 const MyTickets = () => {
   const router = useRouter();
@@ -131,24 +135,24 @@ const MyTickets = () => {
         });
   };
 
-  // Méthodes de paiement avec icônes et couleurs
+  // Méthodes de paiement 
   const paymentMethods = [
     { 
       id: 'mvola', 
       name: 'MVola', 
-      icon: <MaterialCommunityIcons name="cellphone" size={32} color="yellow" />,
-      color: 'yellow'
+      icon: <Image source={mvolaImage} style={{ width: 50, height: 50, resizeMode: 'contain' }} />,
+      color: '#f2e604'
     },
     { 
       id: 'orange', 
       name: 'Orange Money', 
-      icon: <FontAwesome5 name="money-bill-wave" size={30} color="#ff7900" />,
+      icon: <Image source={orangeImage} style={{ width: 50, height: 50, resizeMode: 'contain' }} />,
       color: '#ff7900'
     },
     { 
       id: 'airtel', 
       name: 'Airtel Money', 
-      icon: <Ionicons name="phone-portrait" size={30} color="#e4002b" />,
+      icon: <Image source={airtelImage} style={{ width: 50, height: 50, resizeMode: 'contain' }} />,
       color: '#e4002b'
     },
     { 
@@ -446,7 +450,7 @@ const MyTickets = () => {
         animationOut="bounceOut"
         backdropOpacity={0.7}
       >
-        <View className="bg-white p-6 rounded-2xl">
+        <View className="bg-[#f1f1f1] p-6 rounded-2xl">
           <Text className="text-xl font-bold mb-2 text-center text-gray-800">
             Paiement du billet #{selectedReservationForPayment?.id}
           </Text>
