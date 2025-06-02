@@ -14,12 +14,11 @@ export default function TabsLayout() {
         headerShadowVisible: false,
         headerTintColor: '#fff',
         tabBarStyle: {
-          // backgroundColor: '#1c1c1e',
           backgroundColor: "#f1f1f1",
           borderTopWidth: 0,
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
-          height: 65,
+          height: 75,
           paddingBottom: 10,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -3 },
@@ -55,16 +54,6 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'person' : 'person-outline'} color={color} size={23} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="my-tickets"
         options={{
           title: 'Tickets',
@@ -86,7 +75,17 @@ export default function TabsLayout() {
           ),
         }}
       />
-            <Tabs.Screen
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'person' : 'person-outline'} color={color} size={23} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="availableTaxibe"
         options={{
           title: 'Available',
