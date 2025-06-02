@@ -48,7 +48,7 @@ const AvailableTaxibe = () => {
 
         const available = await axios.get(
           "https://vital-lizard-adequately.ngrok-free.app/api/available_taxibe/",
-          { params: { from, to, date: parsedDate.toISOString().split('T')[0] } }
+          { params: { from, to, date: date } } // Use the date as-is since it's already in YYYY-MM-DD
         );
 
         const taxibeget = await axios.get(
@@ -116,12 +116,12 @@ const AvailableTaxibe = () => {
       year: "numeric",
       month: "long",
       day: "numeric",
+      timeZone: "Indian/Antananarivo", // Explicitly set to EAT timezone
     });
   };
 
   const formatTime = (timeString) => {
     if (!timeString) return "Heure non disponible";
-    // Assuming timeString is in "HH:MM:SS" format, extract only hours and minutes
     const [hours, minutes] = timeString.split(':');
     return `${hours}:${minutes}`;
   };
@@ -142,7 +142,6 @@ const AvailableTaxibe = () => {
   const renderTaxibe = ({ item }) => (
     <TouchableOpacity
       onPress={() => {
-        const formattedDate = new Date(date).toISOString().split('T')[0];
         router.push({
           pathname: "/selectSeats",
           params: {
@@ -154,7 +153,7 @@ const AvailableTaxibe = () => {
             categorie: item.taxibe.categorie,
             from,
             to,
-            date: formattedDate,
+            date: date, // Pass the date as-is
           },
         });
       }}
