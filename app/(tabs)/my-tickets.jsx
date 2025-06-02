@@ -9,7 +9,7 @@ import {
   Image,
   ScrollView,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { 
   Feather, 
@@ -28,6 +28,7 @@ import Modal from "react-native-modal";
 import Animated, {
   FadeIn,
   FadeOut,
+  FadeInUp
 } from "react-native-reanimated";
 import bgImage from '../../assets/bghome3.png';
 import mvolaImage from '../../assets/mvola.jpg';
@@ -36,6 +37,7 @@ import airtelImage from '../../assets/airtel.png';
 
 const MyTickets = () => {
   const router = useRouter();
+  const { refresh } = useLocalSearchParams();
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -45,33 +47,34 @@ const MyTickets = () => {
   const [selectedReservationForPayment, setSelectedReservationForPayment] = useState(null);
   const qrRef = useRef();
 
+  const fetchReservations = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("accessToken");
+      const response = await axios.get(
+        "https://vital-lizard-adequately.ngrok-free.app/api/my-book/",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const validReservations = response.data.filter(
+        (reservation) => reservation.status !== undefined
+      );
+      setReservations(validReservations);
+      setLoading(false);
+    } catch (err) {
+      console.error("Erreur lors de la récupération des réservations:", err);
+      setError("Une erreur est survenue lors de la récupération de vos réservations.");
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchReservations = async () => {
-      try {
-        setLoading(true);
-        const token = await AsyncStorage.getItem("accessToken");
-        const response = await axios.get(
-          "https://vital-lizard-adequately.ngrok-free.app/api/my-book/",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const validReservations = response.data.filter(
-          (reservation) => reservation.status !== undefined
-        );
-        setReservations(validReservations);
-        setLoading(false);
-      } catch (err) {
-        console.error("Erreur lors de la récupération des réservations:", err);
-        setError("Une erreur est survenue lors de la récupération de vos réservations.");
-        setLoading(false);
-      }
-    };
     fetchReservations();
-  }, []);
+  }, [refresh]);
 
   const handleDownload = async (reservation, ref) => {
     try {
@@ -104,14 +107,20 @@ const MyTickets = () => {
   };
 
   const groupReservationsByStatus = () => {
-    const grouped = { paid: [], unpaid: [] };
+    const grouped = { unpaid: [], paid: [] };
     reservations.forEach((reservation) => {
       const statusGroup = reservation.status === "completed" ? "paid" : "unpaid";
       grouped[statusGroup].push(reservation);
     });
+
+    // Sort each group by ID in descending order (newest first)
+    grouped.paid.sort((a, b) => b.id - a.id);
+    grouped.unpaid.sort((a, b) => b.id - a.id);
+
+    // Return sections with unpaid first
     return [
-      { title: "Réservations payées", data: grouped.paid },
       { title: "Réservations en attente de paiement", data: grouped.unpaid },
+      { title: "Réservations payées", data: grouped.paid },
     ].filter(section => section.data.length > 0);
   };
 
@@ -166,12 +175,12 @@ const MyTickets = () => {
     <Animated.View
       entering={FadeIn.duration(300)}
       exiting={FadeOut.duration(300)}
-      className="bg-white rounded-2xl shadow-lg mx-4 mb-6 overflow-hidden border border-gray-100"
+      className="bg-[#f1f1f1] rounded-2xl shadow-lg mx-4 mb-6 overflow-hidden border border-gray-100"
     >
       <View className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 flex-row justify-between items-center">
         <View className="flex-row items-center gap-2">
-          <FontAwesome name="ticket" size={18} color="white" />
-          <Text className="text-white text-base font-bold">
+          <FontAwesome name="ticket" size={18} />
+          <Text className="text-base font-bold">
             Billet #{item.id}
           </Text>
         </View>
@@ -283,17 +292,15 @@ const MyTickets = () => {
       style={{ flex: 1 }}
       resizeMode="cover"
     >
-      <SafeAreaView className="flex-1">
-        <View className="flex-row justify-between items-center p-5 shadow-sm">
-          <TouchableOpacity
-            onPress={() => router.push("/home")}
-            className="bg-gray-100 p-2 rounded-full"
-          >
-            <Feather name="arrow-left" size={24} color="#4B5563" />
-          </TouchableOpacity>
+      <SafeAreaView className="flex-1 mt-5">
+        {/* Header */}
+        <Animated.View
+          entering={FadeInUp.duration(500)}
+          className="flex-row justify-between items-center py-3 px-4 bg-[#D32F2F] rounded-b-3xl shadow-md mb-4"
+        >
           <Text className="text-2xl font-bold text-white">Mes billets</Text>
-          <FontAwesome name="ticket" size={24} color="red" />
-        </View>
+          <FontAwesome name="ticket" size={24} color="#FFFFFF" />
+        </Animated.View>
 
         {error ? (
           <View className="flex-1 justify-center items-center p-4">

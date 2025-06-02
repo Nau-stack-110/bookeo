@@ -138,11 +138,8 @@ const SelectSeats = () => {
       
       alert(`Réservation réussie pour ${selectedSeats.length} siège(s)`);
       router.push({
-        pathname: "/payment",
-        params: {
-          seats: selectedSeats.join(', '),
-          totalAmount: selectedSeats.length * price 
-        }
+        pathname: "/my-tickets",
+        params: { refresh: Date.now().toString() }, // Add refresh timestamp
       });
     } catch (error) {
       console.error('Erreur lors de la réservation:', error);
