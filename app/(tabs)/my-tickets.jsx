@@ -5,9 +5,9 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  ScrollView,
   ImageBackground,
   Image,
+  ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,7 +17,6 @@ import {
   FontAwesome, 
   MaterialCommunityIcons,
   Ionicons,
-  FontAwesome5
 } from "@expo/vector-icons";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -31,7 +30,6 @@ import Animated, {
   FadeOut,
 } from "react-native-reanimated";
 import bgImage from '../../assets/bghome3.png';
-
 import mvolaImage from '../../assets/mvola.jpg';
 import orangeImage from '../../assets/orange.jpg';
 import airtelImage from '../../assets/airtel.png';
@@ -103,7 +101,6 @@ const MyTickets = () => {
   const handlePayment = (method) => {
     setShowPaymentModal(false);
     alert(`Paiement ${method} initié pour la réservation #${selectedReservationForPayment.id}`);
-    // Ici vous intégreriez le vrai processus de paiement
   };
 
   const groupReservationsByStatus = () => {
@@ -112,7 +109,10 @@ const MyTickets = () => {
       const statusGroup = reservation.status === "completed" ? "paid" : "unpaid";
       grouped[statusGroup].push(reservation);
     });
-    return grouped;
+    return [
+      { title: "Réservations payées", data: grouped.paid },
+      { title: "Réservations en attente de paiement", data: grouped.unpaid },
+    ].filter(section => section.data.length > 0);
   };
 
   const getStatusColor = (status) => {
@@ -135,7 +135,6 @@ const MyTickets = () => {
         });
   };
 
-  // Méthodes de paiement 
   const paymentMethods = [
     { 
       id: 'mvola', 
@@ -261,6 +260,12 @@ const MyTickets = () => {
     </Animated.View>
   );
 
+  const renderSectionHeader = ({ item }) => (
+    <Text className="text-lg font-bold text-gray-800 mx-4 mb-2">
+      {item.title}
+    </Text>
+  );
+
   const groupedReservations = groupReservationsByStatus();
 
   if (loading) {
@@ -274,225 +279,219 @@ const MyTickets = () => {
 
   return (
     <ImageBackground
-    source = {bgImage}
-    style = {{flex: 1}}
-    resizeMode="cover"> 
-    <SafeAreaView className="flex-1 ">
-      <View className="flex-row justify-between items-center p-5 shadow-sm">
-        <TouchableOpacity
-          onPress={() => router.push("/home")}
-          className="bg-gray-100 p-2 rounded-full"
-        >
-          <Feather name="arrow-left" size={24} color="#4B5563" />
-        </TouchableOpacity>
-        <Text className="text-2xl font-bold text-white">Mes billets</Text>
-        <FontAwesome name="ticket" size={24} color="red" />
-      </View>
-
-      {error ? (
-        <View className="flex-1 justify-center items-center p-4">
-          <MaterialIcons name="error-outline" size={50} color="#EF4444" />
-          <Text className="text-red-500 text-center mt-4 text-lg">{error}</Text>
-        </View>
-      ) : reservations.length === 0 ? (
-        <View className="flex-1 justify-center items-center p-4">
-          <MaterialIcons name="local-activity" size={60} color="#9CA3AF" />
-          <Text className="text-gray-500 text-center mt-4 text-lg">
-            Vous n'avez aucune réservation pour le moment.
-          </Text>
+      source={bgImage}
+      style={{ flex: 1 }}
+      resizeMode="cover"
+    >
+      <SafeAreaView className="flex-1">
+        <View className="flex-row justify-between items-center p-5 shadow-sm">
           <TouchableOpacity
             onPress={() => router.push("/home")}
-            className="bg-green-500 p-4 rounded-xl mt-6 shadow-md"
+            className="bg-gray-100 p-2 rounded-full"
           >
-            <Text className="text-white font-bold text-base">Réserver un trajet</Text>
+            <Feather name="arrow-left" size={24} color="#4B5563" />
           </TouchableOpacity>
+          <Text className="text-2xl font-bold text-white">Mes billets</Text>
+          <FontAwesome name="ticket" size={24} color="red" />
         </View>
-      ) : (
-        <ScrollView 
-          contentContainerStyle={{ paddingBottom: 30 }}
-          showsVerticalScrollIndicator={false}
+
+        {error ? (
+          <View className="flex-1 justify-center items-center p-4">
+            <MaterialIcons name="error-outline" size={50} color="#EF4444" />
+            <Text className="text-red-500 text-center mt-4 text-lg">{error}</Text>
+          </View>
+        ) : reservations.length === 0 ? (
+          <View className="flex-1 justify-center items-center p-4">
+            <MaterialIcons name="local-activity" size={60} color="#9CA3AF" />
+            <Text className="text-gray-500 text-center mt-4 text-lg">
+              Vous n'avez aucune réservation pour le moment.
+            </Text>
+            <TouchableOpacity
+              onPress={() => router.push("/home")}
+              className="bg-green-500 p-4 rounded-xl mt-6 shadow-md"
+            >
+              <Text className="text-white font-bold text-base">Réserver un trajet</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <FlatList
+            data={groupedReservations}
+            renderItem={({ item }) => (
+              <View>
+                {renderSectionHeader({ item })}
+                <FlatList
+                  data={item.data}
+                  renderItem={renderReservationItem}
+                  keyExtractor={(reservation) => reservation.id.toString()}
+                  contentContainerStyle={{ paddingHorizontal: 4 }}
+                  showsVerticalScrollIndicator={false}
+                />
+              </View>
+            )}
+            keyExtractor={(item) => item.title}
+            contentContainerStyle={{ paddingBottom: 30 }}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
+
+        {/* Modal QR Code */}
+        <Modal
+          isVisible={!!selectedTicket}
+          onBackdropPress={() => setSelectedTicket(null)}
+          animationIn="zoomIn"
+          animationOut="zoomOut"
+          backdropOpacity={0.7}
         >
-          {["paid", "unpaid"].map(
-            (statusGroup) =>
-              groupedReservations[statusGroup].length > 0 && (
-                <View key={statusGroup} className="space-y-4 mt-4">
-                  <Text className="text-lg font-bold text-gray-800 mx-4 mb-2">
-                    {statusGroup === "paid" 
-                      ? "Réservations payées" 
-                      : "Réservations en attente de paiement"}
-                  </Text>
-                  <FlatList
-                    data={groupedReservations[statusGroup]}
-                    renderItem={renderReservationItem}
-                    keyExtractor={(item) => item.id.toString()}
-                    contentContainerStyle={{ paddingHorizontal: 4 }}
-                    showsVerticalScrollIndicator={false}
-                  />
-                </View>
-              )
-          )}
-        </ScrollView>
-      )}
+          <View className="bg-white p-6 rounded-2xl items-center">
+            <Text className="text-xl font-bold mb-4 text-gray-800">
+              Code QR du billet #{selectedTicket?.id}
+            </Text>
+            <ViewShot ref={qrRef} options={{ format: "png", quality: 1.0 }}>
+              <View className="bg-white p-4 rounded-lg border border-gray-200">
+                <QRCode
+                  value={`Reservation:${selectedTicket?.id};Trajet:${selectedTicket?.trajet?.id};Seats:${selectedTicket?.seats_reserved?.join(",")}`}
+                  size={200}
+                  color="black"
+                  backgroundColor="white"
+                />
+              </View>
+            </ViewShot>
+            <Text className="text-gray-600 mt-4 text-center">
+              Présentez ce code QR au chauffeur pour valider votre billet
+            </Text>
+            <TouchableOpacity
+              onPress={() => setSelectedTicket(null)}
+              className="mt-6 bg-blue-500 w-full py-3 rounded-xl"
+            >
+              <Text className="text-white text-center font-bold">Fermer</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
 
-      {/* Modal QR Code */}
-      <Modal
-        isVisible={!!selectedTicket}
-        onBackdropPress={() => setSelectedTicket(null)}
-        animationIn="zoomIn"
-        animationOut="zoomOut"
-        backdropOpacity={0.7}
-      >
-        <View className="bg-white p-6 rounded-2xl items-center">
-          <Text className="text-xl font-bold mb-4 text-gray-800">
-            Code QR du billet #{selectedTicket?.id}
-          </Text>
-          <ViewShot ref={qrRef} options={{ format: "png", quality: 1.0 }}>
-            <View className="bg-white p-4 rounded-lg border border-gray-200">
-              <QRCode
-                value={`Reservation:${selectedTicket?.id};Trajet:${selectedTicket?.trajet?.id};Seats:${selectedTicket?.seats_reserved?.join(",")}`}
-                size={200}
-                color="black"
-                backgroundColor="white"
+        {/* Modal Détails */}
+        <Modal
+          isVisible={!!selectedDetails}
+          onBackdropPress={() => setSelectedDetails(null)}
+          animationIn="slideInUp"
+          animationOut="slideOutDown"
+          backdropOpacity={0.7}
+        >
+          <View className="bg-white p-6 rounded-t-3xl max-w-sm w-full mx-auto">
+            <Text className="text-xl font-bold mb-4 text-center text-gray-800">
+              Détails du billet #{selectedDetails?.id}
+            </Text>
+            <ScrollView className="space-y-3 max-h-80">
+              <DetailItem 
+                icon={<FontAwesome name="bus" size={20} color="#3B82F6" />}
+                label="Taxi-brousse" 
+                value={selectedDetails?.trajet?.taxibe.marque}
               />
-            </View>
-          </ViewShot>
-          <Text className="text-gray-600 mt-4 text-center">
-            Présentez ce code QR au chauffeur pour valider votre billet
-          </Text>
-          <TouchableOpacity
-            onPress={() => setSelectedTicket(null)}
-            className="mt-6 bg-blue-500 w-full py-3 rounded-xl"
-          >
-            <Text className="text-white text-center font-bold">Fermer</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-
-      {/* Modal Détails */}
-      <Modal
-        isVisible={!!selectedDetails}
-        onBackdropPress={() => setSelectedDetails(null)}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        backdropOpacity={0.7}
-      >
-        <View className="bg-white p-6 rounded-t-3xl max-w-sm w-full mx-auto">
-          <Text className="text-xl font-bold mb-4 text-center text-gray-800">
-            Détails du billet #{selectedDetails?.id}
-          </Text>
-          <ScrollView className="space-y-3 max-h-80">
-            <DetailItem 
-              icon={<FontAwesome name="bus" size={20} color="#3B82F6" />}
-              label="Taxi-brousse" 
-              value={selectedDetails?.trajet?.taxibe.marque}
-            />
-            
-            <DetailItem 
-              icon={<MaterialCommunityIcons name="license" size={20} color="#6B7280" />}
-              label="Immatriculation" 
-              value={selectedDetails?.trajet?.taxibe.matricule || "Non disponible"}
-            />
-            
-            <DetailItem 
-              icon={<Feather name="user" size={20} color="#3B82F6" />}
-              label="Passager" 
-              value={selectedDetails?.user.username}
-            />
-            
-            <DetailItem 
-              icon={<MaterialIcons name="category" size={20} color="#3B82F6" />}
-              label="Catégorie" 
-              value={selectedDetails?.trajet?.taxibe.categorie}
-            />
-            
-            <DetailItem 
-              icon={<MaterialCommunityIcons name="steering" size={20} color="#6B7280" />}
-              label="Chauffeur" 
-              value={selectedDetails?.trajet?.taxibe.chauffeur}
-            />
-            
-            <DetailItem 
-              icon={<MaterialIcons name="attach-money" size={20} color="#10B981" />}
-              label="Total" 
-              value={`${(selectedDetails?.places_researved || 0) * selectedDetails?.trajet.price} Ar`}
-            />
-            
-            <View className="flex-row items-center gap-3 mt-2">
-              <MaterialIcons name="event" size={20} color="#6B7280" />
-              <Text className="text-gray-700 font-medium">Date:</Text>
-              <Text className="text-gray-600">
-                {formatDate(selectedDetails?.trajet?.date)} à {selectedDetails?.trajet.time}
-              </Text>
-            </View>
-            
-            <View className="flex-row items-center gap-3 mt-2">
-              <View className={`px-3 py-1 rounded-full ${getStatusColor(selectedDetails?.status)}`}>
-                <Text className="font-medium">
-                  Statut: {selectedDetails?.status === "completed" ? "Payé" : "En attente de paiement"}
+              
+              <DetailItem 
+                icon={<MaterialCommunityIcons name="license" size={20} color="#6B7280" />}
+                label="Immatriculation" 
+                value={selectedDetails?.trajet?.taxibe.matricule || "Non disponible"}
+              />
+              
+              <DetailItem 
+                icon={<Feather name="user" size={20} color="#3B82F6" />}
+                label="Passager" 
+                value={selectedDetails?.user.username}
+              />
+              
+              <DetailItem 
+                icon={<MaterialIcons name="category" size={20} color="#3B82F6" />}
+                label="Catégorie" 
+                value={selectedDetails?.trajet?.taxibe.categorie}
+              />
+              
+              <DetailItem 
+                icon={<MaterialCommunityIcons name="steering" size={20} color="#6B7280" />}
+                label="Chauffeur" 
+                value={selectedDetails?.trajet?.taxibe.chauffeur}
+              />
+              
+              <DetailItem 
+                icon={<MaterialIcons name="attach-money" size={20} color="#10B981" />}
+                label="Total" 
+                value={`${(selectedDetails?.places_researved || 0) * selectedDetails?.trajet.price} Ar`}
+              />
+              
+              <View className="flex-row items-center gap-3 mt-2">
+                <MaterialIcons name="event" size={20} color="#6B7280" />
+                <Text className="text-gray-700 font-medium">Date:</Text>
+                <Text className="text-gray-600">
+                  {formatDate(selectedDetails?.trajet?.date)} à {selectedDetails?.trajet.time}
                 </Text>
               </View>
-            </View>
-          </ScrollView>
-          <TouchableOpacity
-            onPress={() => setSelectedDetails(null)}
-            className="mt-6 bg-gray-200 py-3 rounded-xl"
-          >
-            <Text className="text-gray-800 text-center font-bold">Fermer</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-
-      {/* Modal Paiement */}
-      <Modal
-        isVisible={showPaymentModal}
-        onBackdropPress={() => setShowPaymentModal(false)}
-        animationIn="bounceIn"
-        animationOut="bounceOut"
-        backdropOpacity={0.7}
-      >
-        <View className="bg-[#f1f1f1] p-6 rounded-2xl">
-          <Text className="text-xl font-bold mb-2 text-center text-gray-800">
-            Paiement du billet #{selectedReservationForPayment?.id}
-          </Text>
-          <Text className="text-lg font-semibold text-center text-gray-600 mb-6">
-            Total: {(selectedReservationForPayment?.places_researved || 0) * selectedReservationForPayment?.trajet.price} Ar
-          </Text>
-          
-          <Text className="text-base font-medium text-gray-700 mb-4">
-            Choisissez votre méthode de paiement:
-          </Text>
-          
-          <View className="flex-row flex-wrap justify-between">
-            {paymentMethods.map((method) => (
-              <TouchableOpacity
-                key={method.id}
-                onPress={() => handlePayment(method.name)}
-                className="items-center w-1/2 mb-6"
-              >
-                <View className="bg-gray-100 p-4 rounded-2xl items-center justify-center w-28 h-28">
-                  {method.icon}
+              
+              <View className="flex-row items-center gap-3 mt-2">
+                <View className={`px-3 py-1 rounded-full ${getStatusColor(selectedDetails?.status)}`}>
+                  <Text className="font-medium">
+                    Statut: {selectedDetails?.status === "completed" ? "Payé" : "En attente de paiement"}
+                  </Text>
                 </View>
-                <Text className="font-medium mt-2" style={{ color: method.color }}>
-                  {method.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
+              </View>
+            </ScrollView>
+            <TouchableOpacity
+              onPress={() => setSelectedDetails(null)}
+              className="mt-6 bg-gray-200 py-3 rounded-xl"
+            >
+              <Text className="text-gray-800 text-center font-bold">Fermer</Text>
+            </TouchableOpacity>
           </View>
-          
-          <TouchableOpacity
-            onPress={() => setShowPaymentModal(false)}
-            className="mt-2 border border-gray-300 py-3 rounded-xl"
-          >
-            <Text className="text-gray-700 text-center font-medium">Annuler</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-    </SafeAreaView>
+        </Modal>
+
+        {/* Modal Paiement */}
+        <Modal
+          isVisible={showPaymentModal}
+          onBackdropPress={() => setShowPaymentModal(false)}
+          animationIn="bounceIn"
+          animationOut="bounceOut"
+          backdropOpacity={0.7}
+        >
+          <View className="bg-[#f1f1f1] p-6 rounded-2xl">
+            <Text className="text-xl font-bold mb-2 text-center text-gray-800">
+              Paiement du billet #{selectedReservationForPayment?.id}
+            </Text>
+            <Text className="text-lg font-semibold text-center text-gray-600 mb-6">
+              Total: {(selectedReservationForPayment?.places_researved || 0) * selectedReservationForPayment?.trajet.price} Ar
+            </Text>
+            
+            <Text className="text-base font-medium text-gray-700 mb-4">
+              Choisissez votre méthode de paiement:
+            </Text>
+            
+            <View className="flex-row flex-wrap justify-between">
+              {paymentMethods.map((method) => (
+                <TouchableOpacity
+                  key={method.id}
+                  onPress={() => handlePayment(method.name)}
+                  className="items-center w-1/2 mb-6"
+                >
+                  <View className="bg-gray-100 p-4 rounded-2xl items-center justify-center w-28 h-28">
+                    {method.icon}
+                  </View>
+                  <Text className="font-medium mt-2" style={{ color: method.color }}>
+                    {method.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            
+            <TouchableOpacity
+              onPress={() => setShowPaymentModal(false)}
+              className="mt-2 border border-gray-300 py-3 rounded-xl"
+            >
+              <Text className="text-gray-700 text-center font-medium">Annuler</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+      </SafeAreaView>
     </ImageBackground>
   );
 };
 
-// Composant de détails
 const DetailItem = ({ icon, label, value }) => (
   <View className="flex-row items-center gap-3 mb-2">
     {icon}
