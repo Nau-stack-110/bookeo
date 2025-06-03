@@ -15,22 +15,19 @@ export default function TabsLayout() {
         headerShadowVisible: false,
         headerTintColor: '#fff',
         tabBarStyle: {
-          position: 'absolute',
-          bottom: Platform.OS === 'ios' ? 20 : 15,
-          left: 15,
-          right: 15,
           backgroundColor: '#ffffff',
-          borderRadius: 20,
-          height: 70,
+          borderTopRightRadius: 20,
+          borderTopLeftRadius: 20,
+          height: 75,
           paddingBottom: 10,
           paddingTop: 10,
           shadowColor: '#000',
           shadowOffset: {
             width: 0,
-            height: 6,
+            height: -3,
           },
           shadowOpacity: 0.1,
-          shadowRadius: 10,
+          shadowRadius: 6,
           elevation: 10,
         },
         tabBarLabelStyle: {
@@ -38,20 +35,25 @@ export default function TabsLayout() {
           fontWeight: '600',
         },
         tabBarItemStyle: {
-          marginTop: 5,
+          marginTop: 2,
         },
       }}
     >
       <Tabs.Screen
-        name="selectSeats"
-        options={{
-          tabBarButton: () => null,
-        }}
+       name="selectSeats"
+       options={{
+        title: 'Seats',
+        headerShown: false,
+        tabBarButton: () => null,
+        tabBarIcon: ({ color, focused }) => (
+          <Ionicons name={focused ? 'grid' : 'grid-outline'} color={color} size={22} />
+        ),
+      }}
       />
       <Tabs.Screen
         name="home"
         options={{
-          title: 'Home',
+          title: 'Accueil',
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'home' : 'home-outline'} color={color} size={22} />
@@ -81,7 +83,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="about"
         options={{
-          title: 'About',
+          title: 'A propos',
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'information-circle' : 'information-circle-outline'} color={color} size={21} />
@@ -102,7 +104,12 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="availableTaxibe"
         options={{
+          title: 'Available',
+          headerShown: false,
           tabBarButton: () => null,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'bus' : 'bus-outline'} color={color} size={22} />
+          ),
         }}
       />
 
