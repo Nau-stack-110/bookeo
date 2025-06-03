@@ -1,55 +1,70 @@
 import { Tabs } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { FontAwesome5 } from "@expo/vector-icons";
+import { View, Text, Platform } from 'react-native';
 
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: '#4CAF50',
-        tabBarInactiveTintColor: '#000',
+        tabBarInactiveTintColor: '#8e8e93',
         headerStyle: {
           backgroundColor: '#1c1c1e',
         },
         headerShadowVisible: false,
         headerTintColor: '#fff',
         tabBarStyle: {
-          backgroundColor: "#f1f1f1",
-          borderTopWidth: 0,
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-          height: 75,
+          position: 'absolute',
+          bottom: Platform.OS === 'ios' ? 20 : 15,
+          left: 15,
+          right: 15,
+          backgroundColor: '#ffffff',
+          borderRadius: 20,
+          height: 70,
           paddingBottom: 10,
+          paddingTop: 10,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: -3 },
-          shadowOpacity: 0.2,
-          shadowRadius: 6,
-          elevation: 20,
+          shadowOffset: {
+            width: 0,
+            height: 6,
+          },
+          shadowOpacity: 0.1,
+          shadowRadius: 10,
+          elevation: 10,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: '600',
-          marginBottom: 12,
+        },
+        tabBarItemStyle: {
+          marginTop: 5,
         },
       }}
     >
+      <Tabs.Screen
+        name="selectSeats"
+        options={{
+          tabBarButton: () => null,
+        }}
+      />
       <Tabs.Screen
         name="home"
         options={{
           title: 'Home',
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'home' : 'home-outline'} color={color} size={24} />
+            <Ionicons name={focused ? 'home' : 'home-outline'} color={color} size={22} />
           ),
         }}
       />
       <Tabs.Screen
         name="cooperative"
         options={{
-          title: 'Cooperatives',
+          title: 'Coops',
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'business' : 'business-outline'} color={color} size={23} />
+            <Ionicons name={focused ? 'business' : 'business-outline'} color={color} size={21} />
           ),
         }}
       />
@@ -58,9 +73,8 @@ export default function TabsLayout() {
         options={{
           title: 'Tickets',
           headerShown: false,
-          // tabBarButton: () => null,
-          tabBarIcon: ({ color, focused }) => (
-            <FontAwesome5 name="ticket-alt" color={color} size={22} />
+          tabBarIcon: ({ color }) => (
+            <FontAwesome5 name="ticket-alt" color={color} size={20} />
           ),
         }}
       />
@@ -69,9 +83,8 @@ export default function TabsLayout() {
         options={{
           title: 'About',
           headerShown: false,
-          // tabBarButton: () => null,
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'card' : 'card-outline'} color={color} size={22} />
+            <Ionicons name={focused ? 'information-circle' : 'information-circle-outline'} color={color} size={21} />
           ),
         }}
       />
@@ -81,32 +94,18 @@ export default function TabsLayout() {
           title: 'Profile',
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'person' : 'person-outline'} color={color} size={23} />
+            <Ionicons name={focused ? 'person-circle' : 'person-circle-outline'} color={color} size={23} />
           ),
         }}
       />
+      {/* Hidden Tabs */}
       <Tabs.Screen
         name="availableTaxibe"
         options={{
-          title: 'Available',
-          headerShown: false,
           tabBarButton: () => null,
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'bus' : 'bus-outline'} color={color} size={22} />
-          ),
         }}
       />
-      <Tabs.Screen
-        name="selectSeats"
-        options={{
-          title: 'Seats',
-          headerShown: false,
-          tabBarButton: () => null,
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'grid' : 'grid-outline'} color={color} size={22} />
-          ),
-        }}
-      />
+
     </Tabs>
   );
 }
