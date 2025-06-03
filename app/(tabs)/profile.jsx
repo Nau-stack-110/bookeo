@@ -652,7 +652,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   profileEmail: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#D32F2F",
     marginTop: 4,
   },
