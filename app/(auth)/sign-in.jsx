@@ -75,7 +75,7 @@ const Signin = () => {
       router.replace('/(tabs)/home')
     } catch (err) {
       console.error('Error:', err.response?.data || err.message)
-      setError('Invalid username or password. Please try again.')
+      setError('Email ou mot de passe invalide. Réesayer!.')
     } finally {
       setSubmitting(false)
     }

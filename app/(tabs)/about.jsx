@@ -113,7 +113,7 @@ const About = () => {
                 },
                 {
                   step: "4. Confirmez et Payez",
-                  description: "Validez votre réservation et payez en toute sécurité via l'application.",
+                  description: "Validez votre réservation et payez en toute sécurité via l'application, un ticket électronique est envoyés dans votre boîte email comme une pièce jointe.",
                 },
                 {
                   step: "5. Gérez Vos Billets",

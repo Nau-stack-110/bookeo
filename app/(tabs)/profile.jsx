@@ -327,9 +327,9 @@ export default function Profile() {
                   style={styles.profileImage}
                   resizeMode="cover"
                 />
-                <View style={styles.editImageOverlay}>
+                {/* <View style={styles.editImageOverlay}>
                   <Feather name="camera" size={24} color="#FFFFFF" />
-                </View>
+                </View> */}
               </TouchableOpacity>
               <View style={styles.profileDetails}>
                 <View style={styles.profileNameContainer}>
@@ -576,7 +576,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: "100%",
     height: "100%",
-    resizeMode: "cover",
+    marginTop:35
   },
   contentContainer: {
     flex: 1,
@@ -635,14 +635,14 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     borderColor: "#388E3C",
   },
-  editImageOverlay: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
-    borderRadius: 20,
-    padding: 8,
-  },
+  // editImageOverlay: {
+  //   position: "absolute",
+  //   bottom: 0,
+  //   right: 0,
+  //   backgroundColor: "rgba(0, 0, 0, 0.6)",
+  //   borderRadius: 20,
+  //   padding: 8,
+  // },
   profileDetails: {
     marginLeft: 16,
     flex: 1,
@@ -652,7 +652,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   profileEmail: {
-    fontSize: 20,
+    fontSize: 14,
     color: "#D32F2F",
     marginTop: 4,
   },
