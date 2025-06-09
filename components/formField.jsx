@@ -55,7 +55,7 @@ const FormField = ({ title, value, placeholder, handleChangeText, error, iconNam
           secureTextEntry={secureTextEntry}
           {...props}
         />
-        {isPasswordField && (
+        {/* {isPasswordField && (
           <TouchableOpacity 
             onPress={toggleShowPassword}
             style={{ 
@@ -73,7 +73,7 @@ const FormField = ({ title, value, placeholder, handleChangeText, error, iconNam
               color="#008000" 
             />
           </TouchableOpacity>
-        )}
+        )} */}
       </View>
       {error && (
         <Text style={{ color: '#FF0000', fontSize: 14, marginTop: 5 }}>

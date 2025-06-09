@@ -127,7 +127,6 @@ const Signup = () => {
           justifyContent: 'center',
           paddingHorizontal: 20,
           paddingVertical: 40,
-          // backgroundColor: '#FFFFFF'
         }}>
           {/* Logo and Title */}
           <View style={{ alignItems: 'center', marginBottom: 10 }}>
@@ -148,7 +147,6 @@ const Signup = () => {
               color: '#333',
               marginTop: 10,
               fontStyle:'italic',
-              // fontFamily: 'Roboto'
             }}>
               Créer votre compte
             </Text>
@@ -211,7 +209,7 @@ const Signup = () => {
           <FormField
             title="Phone Number"
             value={form.tel}
-            placeholder="Entrer votre téléphone (e.g., +261...)"
+            placeholder="Entrer votre téléphone (e.g, 038...)"
             handleChangeText={(text) => setForm({ ...form, tel: text })}
             keyboardType="phone-pad"
             error={formErrors.tel}
