@@ -9,6 +9,7 @@ import {
   Image,
   ScrollView,
   Alert,
+  RefreshControl,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -44,11 +45,13 @@ const MyTickets = () => {
   const [error, setError] = useState("");
   const [isConnected, setIsConnected] = useState(true);
   const [retryLoading, setRetryLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [selectedDetails, setSelectedDetails] = useState(null);
   const [selectedReservationForPayment, setSelectedReservationForPayment] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showStripeModal, setShowStripeModal] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
   const qrRef = useRef();
   const { confirmPayment } = useStripe();
 
@@ -61,6 +64,7 @@ const MyTickets = () => {
       if (!token) {
         setError("Veuillez vous connecter pour voir vos réservations.");
         setLoading(false);
+        setRefreshing(false);
         return;
       }
       const response = await axios.get(
@@ -80,11 +84,13 @@ const MyTickets = () => {
       setError("");
       setLoading(false);
       setRetryLoading(false);
+      setRefreshing(false);
     } catch (err) {
       console.error("Erreur lors de la récupération des réservations:", err);
       setError("Impossible de récupérer les réservations. Vérifiez votre connexion.");
       setLoading(false);
       setRetryLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -102,6 +108,11 @@ const MyTickets = () => {
       console.error("Erreur lors du chargement des réservations en cache:", err);
       return false;
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchReservations();
   };
 
   useEffect(() => {
@@ -302,6 +313,7 @@ const MyTickets = () => {
       return;
     }
 
+    setPaymentLoading(true);
     try {
       const token = await AsyncStorage.getItem("accessToken");
       const response = await axios.post(
@@ -325,6 +337,7 @@ const MyTickets = () => {
 
         if (error) {
           Alert.alert("Erreur de paiement", error.message);
+          setPaymentLoading(false);
           return;
         }
 
@@ -362,6 +375,8 @@ const MyTickets = () => {
         "Erreur",
         error.response?.data?.error || error.message || "Une erreur est survenue lors de la confirmation du paiement."
       );
+    } finally {
+      setPaymentLoading(false);
     }
   };
 
@@ -413,7 +428,7 @@ const MyTickets = () => {
         <View className="h-6 w-16 bg-gray-400 rounded-full" />
       </View>
       <View className="p-4 space-y-3">
-        <View classType="flex-row items-center justify-between">
+        <View className="flex-row items-center justify-between">
           <View className="flex-row items-center gap-2">
             <View className="h-5 w-32 bg-gray-400 rounded" />
           </View>
@@ -456,26 +471,30 @@ const MyTickets = () => {
     {
       id: "mvola",
       name: "MVola",
-      icon: <Image source={mvolaImage} style={{ width: 50, height: 50, resizeMode: "contain" }} />,
+      icon: <Image source={mvolaImage} style={{ width: 60, height: 60, resizeMode: "contain" }} />,
       color: "#f2e604",
+      bgColor: "bg-yellow-50",
     },
     {
       id: "orange",
       name: "Orange Money",
-      icon: <Image source={orangeImage} style={{ width: 50, height: 50, resizeMode: "contain" }} />,
+      icon: <Image source={orangeImage} style={{ width: 60, height: 60, resizeMode: "contain" }} />,
       color: "#ff7900",
+      bgColor: "bg-orange-50",
     },
     {
       id: "airtel",
       name: "Airtel Money",
-      icon: <Image source={airtelImage} style={{ width: 50, height: 50, resizeMode: "contain" }} />,
+      icon: <Image source={airtelImage} style={{ width: 60, height: 60, resizeMode: "contain" }} />,
       color: "#e4002b",
+      bgColor: "bg-red-50",
     },
     {
       id: "card",
       name: "Carte de crédit",
-      icon: <FontAwesome name="credit-card" size={30} color="#6772e5" />,
+      icon: <FontAwesome name="credit-card" size={40} color="#6772e5" />,
       color: "#6772e5",
+      bgColor: "bg-blue-50",
     },
   ];
 
@@ -487,7 +506,7 @@ const MyTickets = () => {
     >
       <View className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 flex-row justify-between items-center">
         <View className="flex-row items-center gap-2">
-          <FontAwesome name="ticket" size={18} color="white" />
+          <FontAwesome name="ticket" size={18} color="black" />
           <Text className="text-base font-bold">Billet #{item.id}</Text>
         </View>
         <View className={`px-3 py-1 rounded-full ${getStatusColor(item.status)}`}>
@@ -568,7 +587,13 @@ const MyTickets = () => {
             className="flex-row justify-between items-center py-3 px-4 bg-[#D32F2F] rounded-b-3xl shadow-md mb-4"
           >
             <Text className="text-2xl font-bold text-white">Mes billets</Text>
-            <FontAwesome name="ticket" size={24} color="#FFFFFF" />
+            <TouchableOpacity onPress={onRefresh} disabled={refreshing}>
+              <Feather
+                name="refresh-ccw"
+                size={24}
+                color={refreshing ? "#9CA3AF" : "#FFFFFF"}
+              />
+            </TouchableOpacity>
           </Animated.View>
           <View className="flex-1 justify-center items-center p-4">
             <MaterialIcons name="signal-wifi-off" size={50} color="#EF4444" />
@@ -603,7 +628,13 @@ const MyTickets = () => {
             className="flex-row justify-between items-center py-3 px-4 bg-[#D32F2F] rounded-b-3xl shadow-md mb-4"
           >
             <Text className="text-2xl font-bold text-white">Mes billets</Text>
-            <FontAwesome name="ticket" size={24} color="#FFFFFF" />
+            <TouchableOpacity onPress={onRefresh} disabled={refreshing}>
+              <Feather
+                name="refresh-ccw"
+                size={24}
+                color={refreshing ? "#9CA3AF" : "#FFFFFF"}
+              />
+            </TouchableOpacity>
           </Animated.View>
 
           {error && reservations.length === 0 && (
@@ -673,6 +704,15 @@ const MyTickets = () => {
                 keyExtractor={(item) => item.title}
                 contentContainerStyle={{ paddingBottom: 30 }}
                 showsVerticalScrollIndicator={false}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor="#10B981"
+                    title="Actualisation..."
+                    titleColor="#6B7280"
+                  />
+                }
               />
             </View>
           )}
@@ -703,7 +743,7 @@ const MyTickets = () => {
               </Text>
               <TouchableOpacity
                 onPress={() => setSelectedTicket(null)}
-                className="mt-6 bg-blue-500 w-full py-3 rounded-xl"
+                className="mt-6 bg-blue-500 w-full py-3 rounded-xl shadow-md"
               >
                 <Text className="text-white text-center font-bold">Fermer</Text>
               </TouchableOpacity>
@@ -769,7 +809,7 @@ const MyTickets = () => {
               </ScrollView>
               <TouchableOpacity
                 onPress={() => setSelectedDetails(null)}
-                className="mt-6 bg-gray-200 py-3 rounded-xl"
+                className="mt-6 bg-gray-200 py-3 rounded-xl shadow-md"
               >
                 <Text className="text-gray-800 text-center font-bold">Fermer</Text>
               </TouchableOpacity>
@@ -783,27 +823,27 @@ const MyTickets = () => {
             animationOut="bounceOut"
             backdropOpacity={0.7}
           >
-            <View className="bg-[#f1f1f1] p-6 rounded-2xl">
-              <Text className="text-xl font-bold mb-2 text-center text-gray-800">
+            <View className="bg-white p-6 rounded-2xl shadow-xl">
+              <Text className="text-2xl font-bold mb-2 text-center text-gray-800">
                 Paiement du billet #{selectedReservationForPayment?.id}
               </Text>
               <Text className="text-lg font-semibold text-center text-gray-600 mb-6">
                 Total: {(selectedReservationForPayment?.places_researved || 0) * selectedReservationForPayment?.trajet.price} Ar
               </Text>
-              <Text className="text-base font-medium text-gray-700 mb-4">
-                Choisissez votre méthode de paiement:
+              <Text className="text-base font-medium text-gray-700 mb-4 text-center">
+                Choisissez votre méthode de paiement
               </Text>
               <View className="flex-row flex-wrap justify-between">
                 {paymentMethods.map((method) => (
                   <TouchableOpacity
                     key={method.id}
                     onPress={() => handlePayment(method.name)}
-                    className="items-center w-1/2 mb-6"
+                    className={`items-center w-[45%] mb-4 p-4 rounded-xl shadow-sm ${method.bgColor} border border-gray-200`}
                   >
-                    <View className="bg-gray-100 p-4 rounded-2xl items-center justify-center w-28 h-28">
+                    <View className="bg-white p-3 rounded-lg shadow-sm">
                       {method.icon}
                     </View>
-                    <Text className="font-medium mt-2" style={{ color: method.color }}>
+                    <Text className="font-semibold mt-2 text-center" style={{ color: method.color }}>
                       {method.name}
                     </Text>
                   </TouchableOpacity>
@@ -811,9 +851,9 @@ const MyTickets = () => {
               </View>
               <TouchableOpacity
                 onPress={() => setShowPaymentModal(false)}
-                className="mt-2 border border-gray-300 py-3 rounded-xl"
+                className="mt-4 bg-gray-200 py-3 rounded-xl shadow-md"
               >
-                <Text className="text-gray-700 text-center font-medium">Annuler</Text>
+                <Text className="text-gray-800 text-center font-bold">Annuler</Text>
               </TouchableOpacity>
             </View>
           </Modal>
@@ -825,37 +865,58 @@ const MyTickets = () => {
             animationOut="slideOutDown"
             backdropOpacity={0.7}
           >
-            <View className="bg-[#f1f1f1] p-6 rounded-2xl">
-              <Text className="text-xl font-bold mb-2 text-center text-gray-800">
-                Paiement par carte - Billet #{selectedReservationForPayment?.id}
+            <View className="bg-white p-6 rounded-2xl shadow-xl">
+              <Text className="text-2xl font-bold mb-2 text-center text-gray-800">
+                Paiement par carte
               </Text>
-              <Text className="text-lg font-semibold text-center text-gray-600 mb-6">
+              <Text className="text-lg font-semibold text-center text-gray-600 mb-2">
+                Billet #{selectedReservationForPayment?.id}
+              </Text>
+              <Text className="text-base text-center text-gray-500 mb-6">
                 Total: {(selectedReservationForPayment?.places_researved || 0) * selectedReservationForPayment?.trajet.price} Ar
               </Text>
-              <CardField
-                postalCodeEnabled={false}
-                placeholders={{ number: "1234 5678 9012 3456" }}
-                cardStyle={{
-                  backgroundColor: "#FFFFFF",
-                  textColor: "#1f2937",
-                  borderColor: "#d1d5db",
-                  borderWidth: 1,
-                  borderRadius: 8,
-                  placeholderColor: "#9ca3af",
-                }}
-                style={{ height: 50, marginBottom: 20 }}
-              />
+              <View className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6">
+                <Text className="text-sm font-medium text-gray-700 mb-2">
+                  Détails de la carte
+                </Text>
+                <CardField
+                  postalCodeEnabled={false}
+                  placeholders={{ number: "1234 5678 9012 3456" }}
+                  cardStyle={{
+                    backgroundColor: "#FFFFFF",
+                    textColor: "#1f2937",
+                    borderColor: "#d1d5db",
+                    borderWidth: 1,
+                    borderRadius: 8,
+                    placeholderColor: "#9ca3af",
+                  }}
+                  style={{ height: 50, marginBottom: 10 }}
+                />
+              </View>
               <TouchableOpacity
                 onPress={handleStripePayment}
-                className="bg-blue-600 py-3 rounded-xl"
+                disabled={paymentLoading}
+                className={`flex-row justify-center items-center bg-blue-600 py-3 rounded-xl shadow-md ${paymentLoading ? 'opacity-50' : ''}`}
               >
-                <Text className="text-white text-center font-bold">Payer par carte</Text>
+                {paymentLoading ? (
+                  <>
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                    <Text className="text-white font-bold text-base ml-2">
+                      Traitement...
+                    </Text>
+                  </>
+                ) : (
+                  <Text className="text-white font-bold text-base">
+                    Payer par carte
+                  </Text>
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setShowStripeModal(false)}
-                className="mt-4 border border-gray-300 py-3 rounded-xl"
+                className="mt-4 bg-gray-200 py-3 rounded-xl shadow-md"
+                disabled={paymentLoading}
               >
-                <Text className="text-gray-700 text-center font-medium">Annuler</Text>
+                <Text className="text-gray-800 text-center font-bold">Annuler</Text>
               </TouchableOpacity>
             </View>
           </Modal>

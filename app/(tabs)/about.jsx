@@ -13,7 +13,6 @@ const About = () => {
     <ImageBackground
       source={backgroundImage}
       style={{ flex: 1 }}
-      resizeMode="cover"
     >
       <SafeAreaView className="flex-1 mt-5">
         {/* Header */}
@@ -28,12 +27,12 @@ const About = () => {
         {/* Content */}
         <ScrollView className="flex-1 px-4 pt-6">
           {/* Introduction */}
-          <Animated.View entering={FadeInDown.duration(500).delay(200)} className="rounded-2xl shadow-md p-6 mb-6">
+          {/* <Animated.View entering={FadeInDown.duration(500).delay(200)} className="rounded-2xl shadow-md p-6 mb-6">
             <Text className="text-xl font-bold text-[#D32F2F] mb-3">Bienvenue sur Taxi-Brousse</Text>
             <Text className="text-gray-700 text-base leading-6">
               Taxi-Brousse est votre compagnon de voyage moderne pour explorer Madagascar en toute simplicité. Notre application révolutionne la réservation de trajets en taxi-brousse, offrant une expérience fluide, sécurisée et adaptée à vos besoins. Que vous voyagiez pour le travail ou le plaisir, nous vous connectons aux meilleures options de transport avec un maximum de confort et de fiabilité.
             </Text>
-          </Animated.View>
+          </Animated.View> */}
 
           {/* Objective */}
           <Animated.View entering={FadeInDown.duration(500).delay(400)} className="rounded-2xl shadow-md p-6 mb-6">
