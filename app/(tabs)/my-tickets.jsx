@@ -23,7 +23,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
 import QRCode from "react-native-qrcode-svg";
 import * as Sharing from "expo-sharing";
-import * as FileSystem from "expo-file-system";
 import * as Print from "expo-print";
 import ViewShot from "react-native-view-shot";
 import Modal from "react-native-modal";
@@ -48,7 +47,7 @@ const MyTickets = () => {
   const qrRef = useRef();
 
   const CACHE_KEY = "cached_reservations";
-  const RETRY_INTERVAL = 10000; // Retry every 10 seconds when offline
+  const RETRY_INTERVAL = 10000;
 
   const fetchReservations = async () => {
     try {
@@ -72,7 +71,7 @@ const MyTickets = () => {
       );
       setReservations(validReservations);
       await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(validReservations));
-      setError(""); // Clear error on success
+      setError("");
       setLoading(false);
       setRetryLoading(false);
     } catch (err) {
@@ -88,7 +87,7 @@ const MyTickets = () => {
       const cached = await AsyncStorage.getItem(CACHE_KEY);
       if (cached) {
         setReservations(JSON.parse(cached));
-        setError(""); // Clear error when cache is loaded
+        setError("");
         setLoading(false);
         return true;
       }
@@ -107,7 +106,7 @@ const MyTickets = () => {
       setRetryLoading(false);
 
       if (state.isConnected) {
-        setError(""); // Clear error when connection is restored
+        setError("");
         setLoading(true);
         await fetchReservations();
       } else {
@@ -117,7 +116,6 @@ const MyTickets = () => {
         } else {
           setError("Connexion perdue. Affichage des données en cache.");
         }
-        // Start retry interval when offline
         retryInterval = setInterval(async () => {
           const netInfo = await NetInfo.fetch();
           if (netInfo.isConnected) {
@@ -131,7 +129,6 @@ const MyTickets = () => {
 
     const unsubscribe = NetInfo.addEventListener(handleNetworkChange);
 
-    // Initial load
     loadCachedReservations().then((hasCache) => {
       if (!hasCache) setLoading(true);
     });
@@ -195,7 +192,6 @@ const MyTickets = () => {
             <tr><td>Places réservées</td><td>${reservation.places_researved || 0}</td></tr>
             <tr><td>Numéros de siège</td><td>${reservation.seats_reserved?.join(", ") || "Aucun"}</td></tr>
             <tr><td>Date de réservation</td><td>${formatDate(reservation.date_created)}</td></tr>
-            <tr><td>Statut</td><td>${reservation.status === "completed" ? "Payé" : "En attente"}</td></tr>
           </table>
           <div class="instructions">
             <p><strong>Instructions:</strong></p>
@@ -263,6 +259,8 @@ const MyTickets = () => {
         return "bg-green-100 text-green-800";
       case "pending":
         return "bg-yellow-100 text-yellow-800";
+      case "failed":
+        return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -362,11 +360,13 @@ const MyTickets = () => {
     >
       <View className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 flex-row justify-between items-center">
         <View className="flex-row items-center gap-2">
-          <FontAwesome name="ticket" size={18} color="white" />
+          <FontAwesome name="ticket" size={18} color="black" />
           <Text className="text-base font-bold">Billet #{item.id}</Text>
         </View>
         <View className={`px-3 py-1 rounded-full ${getStatusColor(item.status)}`}>
-          <Text className="font-medium">{item.status === "completed" ? "Payé" : "Non payé"}</Text>
+          <Text className="font-medium">
+            {item.status === "completed" ? "Payé" : item.status === "failed" ? "Expiré" : "Non payé"}
+          </Text>
         </View>
       </View>
       <View className="p-4 space-y-3">
@@ -410,16 +410,18 @@ const MyTickets = () => {
           <Ionicons name="information-circle-outline" size={24} color="#6B7280" />
           <Text className="text-gray-600 text-xs font-medium mt-1">Détails</Text>
         </TouchableOpacity>
-        {item.status !== "completed" && (
+        {item.status === "pending" && (
           <TouchableOpacity onPress={() => handlePaymentInitiation(item)} className="items-center">
             <MaterialIcons name="payment" size={24} color="#10B981" />
             <Text className="text-green-600 text-xs font-medium mt-1">Payer</Text>
           </TouchableOpacity>
         )}
-        <TouchableOpacity onPress={() => handleDownload(item)} className="items-center">
-          <Feather name="download" size={24} color="#10B981" />
-          <Text className="text-green-600 text-xs font-medium mt-1">Télécharger</Text>
-        </TouchableOpacity>
+        {item.status === "completed" && (
+          <TouchableOpacity onPress={() => handleDownload(item)} className="items-center">
+            <Feather name="download" size={24} color="#10B981" />
+            <Text className="text-green-600 text-xs font-medium mt-1">Télécharger</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </Animated.View>
   );
@@ -632,7 +634,7 @@ const MyTickets = () => {
               <View className="flex-row items-center gap-3 mt-2">
                 <View className={`px-3 py-1 rounded-full ${getStatusColor(selectedDetails?.status)}`}>
                   <Text className="font-medium">
-                    Statut: {selectedDetails?.status === "completed" ? "Payé" : "En attente de paiement"}
+                    Statut: {selectedDetails?.status === "completed" ? "Payé" : selectedDetails?.status === "failed" ? "Expiré" : "En attente de paiement"}
                   </Text>
                 </View>
               </View>
